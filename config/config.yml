@@ -1,0 +1,3 @@
+orodev:
+    postgres:
+        password: 'test'

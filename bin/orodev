@@ -1,0 +1,22 @@
+#!/usr/bin/env php
+<?php
+
+require  __DIR__ . '/../vendor/autoload.php';
+
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
+
+$app = new Application('Oro dev tools');
+
+$app->addCommands(
+    [
+        new \Programgames\OroDev\Command\HelpCommand(),
+        new \Programgames\OroDev\Command\CheckOroRequirementsCommand(
+        ),
+        new \Programgames\OroDev\Command\CheckSystemRequirementsCommand(
+        )
+    ]
+);
+
+$app->run(new ArgvInput($argv), new ConsoleOutput());
