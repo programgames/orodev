@@ -14,7 +14,7 @@ use Symfony\Requirements\SymfonyRequirements;
 /**
  * This class specifies all requirements and optional recommendations that are necessary to run the Oro Application.
  */
-class OroCommerce3ApplicationApplicationRequirements extends SymfonyRequirements implements OroApplicationRequirementsInterface
+class OroCommerce3CEApplicationApplicationRequirements extends SymfonyRequirements implements OroApplicationRequirementsInterface
 {
     const REQUIRED_PHP_VERSION = '7.1.26';
     const REQUIRED_GD_VERSION = '2.0';

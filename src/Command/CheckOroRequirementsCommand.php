@@ -3,8 +3,9 @@
 namespace Programgames\OroDev\Command;
 
 use MCStreetguy\ComposerParser\ComposerJson;
-use Programgames\OroDev\Requirements\OroCommerce3ApplicationApplicationRequirements;
-use Programgames\OroDev\Requirements\OroCommerce4ApplicationApplicationRequirements;
+use Programgames\OroDev\Requirements\OroCommerce3EEApplicationApplicationRequirements;
+use Programgames\OroDev\Requirements\OroCommerce4CEApplicationApplicationRequirements;
+use Programgames\OroDev\Requirements\OroCommerce4EEApplicationApplicationRequirements;
 use Programgames\OroDev\Requirements\OroApplicationRequirementsInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -133,10 +134,10 @@ EOT
         if (array_key_exists('oro/commerce-enterprise', $require)) {
             $version = $require['oro/commerce-enterprise'];
             if (preg_match('/4./', $version)) {
-                return new OroCommerce4ApplicationApplicationRequirements($input->getOption('env'));
+                return new OroCommerce4EEApplicationApplicationRequirements($input->getOption('env'));
             } else {
                 if (preg_match('/3./', $version)) {
-                    return new OroCommerce3ApplicationApplicationRequirements($input->getOption('env'));
+                    return new OroCommerce3EEApplicationApplicationRequirements($input->getOption('env'));
                 } else {
                     throw new \RuntimeException('Application version not supported');
                 }
@@ -144,7 +145,7 @@ EOT
         } elseif (array_key_exists('oro/commerce', $require)) {
             $version = $require['oro/commerce'];
             if (preg_match('/4./', $version)) {
-                throw new \RuntimeException('Not supported yet');
+                return new OroCommerce4CEApplicationApplicationRequirements($input->getOption('env'));
             } else {
                 if (preg_match('/3./', $version)) {
                     throw new \RuntimeException('Not supported yet');
