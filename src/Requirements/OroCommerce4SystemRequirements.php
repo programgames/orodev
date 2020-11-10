@@ -12,7 +12,7 @@ use Programgames\OroDev\Requirements\Tools\PsqlExecutableFinder;
 use Programgames\OroDev\Requirements\Tools\PsqlVersionChecker;
 use Symfony\Requirements\RequirementCollection;
 
-class SystemRequirements extends RequirementCollection
+class OroCommerce4SystemRequirements extends RequirementCollection
 {
     public const POSTGRES_VERSION = "~9.6";
     public const PSQL_VERSION = "~9.6";
@@ -21,7 +21,7 @@ class SystemRequirements extends RequirementCollection
     /**
      * OroDevRequirements constructor.
      */
-    public function __construct()
+    public function __construct($env = 'prod')
     {
         $postgresFinder = new PostgresExecutableFinder();
         $postgresExecutable = $postgresFinder->findExecutable();

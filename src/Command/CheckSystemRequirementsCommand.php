@@ -2,7 +2,7 @@
 
 namespace Programgames\OroDev\Command;
 
-use Programgames\OroDev\Requirements\SystemRequirements;
+use Programgames\OroDev\Requirements\OroCommerce4SystemRequirements;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -47,7 +47,7 @@ EOT
     {
         $output->writeln('Check system requirements');
 
-        $oroDevRequirements = $this->getSystemRequirements($input);
+        $oroDevRequirements = $this->getOroCommerce4SystemRequirements($input);
         $this->renderTable($oroDevRequirements->getRequirements(), 'Optional recommendations', $output);
 
         $exitCode = 0;
@@ -113,10 +113,10 @@ EOT
     /**
      * @param InputInterface $input
      *
-     * @return SystemRequirements
+     * @return OroCommerce4SystemRequirements
      */
-    protected function getSystemRequirements(InputInterface $input)
+    protected function getOroCommerce4SystemRequirements(InputInterface $input)
     {
-        return new SystemRequirements($input->getOption('env'));
+        return new OroCommerce4SystemRequirements($input->getOption('env'));
     }
 }
