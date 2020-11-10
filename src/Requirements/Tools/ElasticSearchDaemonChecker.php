@@ -2,6 +2,7 @@
 
 namespace Programgames\OroDev\Requirements\Tools;
 
+use RuntimeException;
 use Symfony\Component\Process\Process;
 
 class ElasticSearchDaemonChecker implements DaemonCheckerInterface
@@ -25,6 +26,6 @@ class ElasticSearchDaemonChecker implements DaemonCheckerInterface
 
     public function getRunningPort(): int
     {
-        throw new \RuntimeException();
+        throw new RuntimeException();
     }
 }

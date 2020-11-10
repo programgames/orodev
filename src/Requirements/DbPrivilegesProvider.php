@@ -2,6 +2,9 @@
 
 namespace Programgames\OroDev\Requirements;
 
+use Exception;
+use PDO;
+
 /**
  * Provide DB privileges for a connected user.
  */
@@ -19,7 +22,7 @@ class DbPrivilegesProvider
             // Create table to fetch granted permissions
             $pdo->exec('CREATE TABLE oro_privileges_check(id INT)');
             $granted = ['CREATE'];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [];
         }
 
@@ -42,7 +45,7 @@ class DbPrivilegesProvider
             // Drop temporary table
             $pdo->exec('DROP TABLE oro_privileges_check');
             $granted[] = 'DROP';
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         return $granted;

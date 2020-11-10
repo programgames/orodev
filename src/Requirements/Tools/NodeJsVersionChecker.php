@@ -3,6 +3,7 @@
 namespace Programgames\OroDev\Requirements\Tools;
 
 use Composer\Semver\Semver;
+use RuntimeException;
 use Symfony\Component\Process\Process;
 
 class NodeJsVersionChecker implements SatisfyingInterface
@@ -17,7 +18,7 @@ class NodeJsVersionChecker implements SatisfyingInterface
         $process = new Process([$nodeJsExecutable, '-v']);
         $process->run();
         if (!$process->isSuccessful()) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 sprintf('Failed to check "%s" version. %s', $nodeJsExecutable, $process->getErrorOutput())
             );
         }

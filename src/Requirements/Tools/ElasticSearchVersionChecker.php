@@ -3,6 +3,7 @@
 namespace Programgames\OroDev\Requirements\Tools;
 
 use Composer\Semver\Semver;
+use RuntimeException;
 use Symfony\Component\Process\Process;
 
 class ElasticSearchVersionChecker implements SatisfyingInterface
@@ -12,7 +13,7 @@ class ElasticSearchVersionChecker implements SatisfyingInterface
         $process = new Process([$executable, '--version']);
         $process->run();
         if (!$process->isSuccessful()) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 sprintf('Failed to check "%s" program. %s, command not found', $executable, $process->getErrorOutput())
             );
         }

@@ -2,6 +2,7 @@
 
 namespace Programgames\OroDev\Requirements;
 
+use Exception;
 use PDO;
 use Programgames\OroDev\Requirements\Tools\NodeJsExecutableFinder;
 use Programgames\OroDev\Requirements\Tools\NodeJsVersionChecker;
@@ -26,6 +27,7 @@ class OroCommerce3CEApplicationApplicationRequirements extends SymfonyRequiremen
 
     /**
      * @param string $env
+     * @throws Exception
      */
     public function __construct($env = 'prod')
     {
@@ -429,7 +431,7 @@ class OroCommerce3CEApplicationApplicationRequirements extends SymfonyRequiremen
                 );
 
                 return !empty($version);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return false;
             }
         }
@@ -468,7 +470,7 @@ class OroCommerce3CEApplicationApplicationRequirements extends SymfonyRequiremen
                     $config['database_user'],
                     $config['database_password']
                 );
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return null;
             }
         }
@@ -479,6 +481,7 @@ class OroCommerce3CEApplicationApplicationRequirements extends SymfonyRequiremen
     /**
      * @param string $parametersYmlPath
      * @return array
+     * @throws Exception
      */
     protected function getParameters($parametersYmlPath)
     {

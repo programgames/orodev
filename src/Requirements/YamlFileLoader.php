@@ -4,6 +4,8 @@ namespace Programgames\OroDev\Requirements;
 
 use InvalidArgumentException;
 use Programgames\OroDev\Requirements\Tools\ArrayUtil;
+use Symfony\Component\Config\Exception\FileLoaderImportCircularReferenceException;
+use Symfony\Component\Config\Exception\LoaderLoadException;
 use Symfony\Component\Config\Loader\FileLoader;
 use Symfony\Component\Yaml\Yaml;
 
@@ -52,6 +54,8 @@ class YamlFileLoader extends FileLoader
      * @param array $content
      * @param string $file
      * @return array
+     * @throws FileLoaderImportCircularReferenceException
+     * @throws LoaderLoadException
      */
     private function parseImports($content, $file)
     {

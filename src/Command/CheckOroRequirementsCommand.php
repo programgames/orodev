@@ -3,10 +3,11 @@
 namespace Programgames\OroDev\Command;
 
 use MCStreetguy\ComposerParser\ComposerJson;
-use Programgames\OroDev\Requirements\OroCommerce3EEApplicationApplicationRequirements;
-use Programgames\OroDev\Requirements\OroCommerce4CEApplicationApplicationRequirements;
-use Programgames\OroDev\Requirements\OroCommerce4EEApplicationApplicationRequirements;
+use Programgames\OroDev\Requirements\OroCommerce3EEApplicationRequirements;
+use Programgames\OroDev\Requirements\OroPlatform4CEApplicationRequirements;
+use Programgames\OroDev\Requirements\OroPlatform4EEApplicationRequirements;
 use Programgames\OroDev\Requirements\OroApplicationRequirementsInterface;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -126,7 +127,7 @@ EOT
     {
         $content = json_decode(file_get_contents(getcwd() . '/composer.json'), true);
         if ($content === null) {
-            throw new \RuntimeException('composer.json not found');
+            throw new RuntimeException('composer.json not found');
         }
         $composerJson = new ComposerJson($content);
 
@@ -134,38 +135,38 @@ EOT
         if (array_key_exists('oro/commerce-enterprise', $require)) {
             $version = $require['oro/commerce-enterprise'];
             if (preg_match('/4./', $version)) {
-                return new OroCommerce4EEApplicationApplicationRequirements($input->getOption('env'));
+                return new OroPlatform4EEApplicationRequirements($input->getOption('env'));
             } else {
                 if (preg_match('/3./', $version)) {
-                    return new OroCommerce3EEApplicationApplicationRequirements($input->getOption('env'));
+                    return new OroCommerce3EEApplicationRequirements($input->getOption('env'));
                 } else {
-                    throw new \RuntimeException('Application version not supported');
+                    throw new RuntimeException('Application version not supported');
                 }
             }
         } elseif (array_key_exists('oro/commerce', $require)) {
             $version = $require['oro/commerce'];
             if (preg_match('/4./', $version)) {
-                return new OroCommerce4CEApplicationApplicationRequirements($input->getOption('env'));
+                return new OroPlatform4CEApplicationRequirements($input->getOption('env'));
             } else {
                 if (preg_match('/3./', $version)) {
-                    throw new \RuntimeException('Not supported yet');
+                    throw new RuntimeException('Not supported yet');
                 } else {
-                    throw new \RuntimeException('Application version not supported');
+                    throw new RuntimeException('Application version not supported');
                 }
             }
         } elseif (array_key_exists('oro/platform', $require)) {
             $version = $require['oro/platform'];
             if (preg_match('/4./', $version)) {
-                throw new \RuntimeException('Not supported yet');
+                return new OroPlatform4CEApplicationRequirements($input->getOption('env'));
             } else {
                 if (preg_match('/3./', $version)) {
-                    throw new \RuntimeException('Not supported yet');
+                    throw new RuntimeException('Not supported yet');
                 } else {
-                    throw new \RuntimeException('Application version not supported');
+                    throw new RuntimeException('Application version not supported');
                 }
             }
         }
-        throw new \RuntimeException('Application not supported');
+        throw new RuntimeException('Application not supported');
     }
 
 }

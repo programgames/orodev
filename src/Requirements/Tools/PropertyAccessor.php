@@ -2,11 +2,15 @@
 
 namespace Programgames\OroDev\Requirements\Tools;
 
+use ArrayAccess;
+use ReflectionClass;
+use ReflectionException;
 use Symfony\Component\PropertyAccess\Exception;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\PropertyAccess\PropertyPath;
 use Symfony\Component\PropertyAccess\PropertyPathInterface;
 use Symfony\Component\String\Inflector\EnglishInflector;
+use Traversable;
 
 /**
  * Writes and reads values to/from an object/array graph.
@@ -157,11 +161,12 @@ class PropertyAccessor implements PropertyAccessorInterface
      *
      * If it is found, an exception is thrown.
      *
-     * @param object|array                 $object       The object or array to modify
+     * @param object|array $object The object or array to modify
      * @param string|PropertyPathInterface $propertyPath The property path to modify
      *
      * @throws Exception\InvalidPropertyPathException If an object or a property path has invalid type.
      * @throws Exception\NoSuchPropertyException If a property does not exist or is not public.
+     * @throws ReflectionException
      */
     public function remove(&$object, $propertyPath)
     {
@@ -236,13 +241,14 @@ class PropertyAccessor implements PropertyAccessorInterface
      *
      * If none of them are found, an exception is thrown.
      *
-     * @param object|array                 $object       The object or array to traverse
+     * @param object|array $object The object or array to traverse
      * @param string|PropertyPathInterface $propertyPath The property path to read
      *
      * @return mixed The value at the end of the property path
      *
      * @throws Exception\InvalidPropertyPathException If an object or a property path has invalid type.
      * @throws Exception\NoSuchPropertyException If a property does not exist or is not public.
+     * @throws ReflectionException
      */
     public function getValue($object, $propertyPath)
     {
@@ -309,7 +315,7 @@ class PropertyAccessor implements PropertyAccessorInterface
 
                 $property = $propertyPath->getElement($i);
 
-                if ($objectOrArray instanceof \ArrayAccess || is_array($objectOrArray)) {
+                if ($objectOrArray instanceof ArrayAccess || is_array($objectOrArray)) {
                     return true;
                 }
                 if (!$this->isPropertyWritable($objectOrArray, $property)) {
@@ -332,15 +338,16 @@ class PropertyAccessor implements PropertyAccessorInterface
     /**
      * Reads the path from an object up to a given path index.
      *
-     * @param object|array          $object               The object or array to read from
-     * @param PropertyPathInterface $propertyPath         The property path to read
-     * @param bool                  $addMissing           Set true to allow create missing nested arrays on demand
-     * @param bool                  $ignoreInvalidIndices Whether to ignore invalid indices or throw an exception
-     * @param int                   $lastIndex            The index up to which should be read
+     * @param object|array $object The object or array to read from
+     * @param PropertyPathInterface $propertyPath The property path to read
+     * @param bool $addMissing Set true to allow create missing nested arrays on demand
+     * @param bool $ignoreInvalidIndices Whether to ignore invalid indices or throw an exception
+     * @param int $lastIndex The index up to which should be read
      *
      * @return array The values read in the path.
      *
      * @throws Exception\NoSuchPropertyException If a value within the path is neither object nor array.
+     * @throws ReflectionException
      *                                           If a non-existing index is accessed.
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
@@ -374,7 +381,7 @@ class PropertyAccessor implements PropertyAccessorInterface
             $property = $path[$i];
 
             // Create missing nested arrays on demand
-            if (($object instanceof \ArrayAccess && !isset($object[$property]))
+            if (($object instanceof ArrayAccess && !isset($object[$property]))
                 || (is_array($object) && !array_key_exists($property, $object))
             ) {
                 if ($addMissing) {
@@ -405,7 +412,7 @@ class PropertyAccessor implements PropertyAccessorInterface
      *
      * @return mixed
      *
-     * @throws Exception\NoSuchPropertyException if the property does not exist or is not public
+     * @throws Exception\NoSuchPropertyException|ReflectionException if the property does not exist or is not public
      *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
@@ -431,11 +438,11 @@ class PropertyAccessor implements PropertyAccessorInterface
                     sprintf('The key "%s" does exist in an array.', $property)
                 );
             }
-        } elseif ($object instanceof \ArrayAccess) {
+        } elseif ($object instanceof ArrayAccess) {
             if (isset($object[$property])) {
                 $result[self::VALUE] = $object[$property];
             } elseif ($strict) {
-                $reflClass = new \ReflectionClass($object);
+                $reflClass = new ReflectionClass($object);
                 throw new Exception\NoSuchPropertyException(
                     sprintf('The key "%s" does exist in class "%s".', $property, $reflClass->name)
                 );
@@ -500,17 +507,18 @@ class PropertyAccessor implements PropertyAccessorInterface
     /**
      * Sets the value of a property in the given object.
      *
-     * @param array|object $object   The object or array to write to
-     * @param mixed        $property The property or index to write
-     * @param mixed        $value    The value to write
+     * @param array|object $object The object or array to write to
+     * @param mixed $property The property or index to write
+     * @param mixed $value The value to write
      *
      * @throws Exception\NoSuchPropertyException If the property does not exist or is not public.
+     * @throws ReflectionException
      *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     protected function writeValue(&$object, $property, $value)
     {
-        if ($object instanceof \ArrayAccess || is_array($object)) {
+        if ($object instanceof ArrayAccess || is_array($object)) {
             $object[$property] = $value;
         } elseif (is_object($object)) {
             $access = $this->getWriteAccessInfo(get_class($object), $property, $value);
@@ -553,14 +561,14 @@ class PropertyAccessor implements PropertyAccessorInterface
     /**
      * Checks if value is a collection and sets the value for the attribute
      *
-     * @param array|object      $object   The object or array to write to
-     * @param mixed             $property The property or index to write
-     * @param mixed             $value    The value to write
-     * @param \ReflectionClass  $reflClass
-     * @param array             $singulars
+     * @param array|object $object The object or array to write to
+     * @param mixed $property The property or index to write
+     * @param mixed $value The value to write
+     * @param ReflectionClass $reflClass
+     * @param array $singulars
      * @return bool
      */
-    protected function checkValueIsCollection($object, $property, $value, $reflClass, $singulars)
+    protected function checkValueIsCollection($object, $property, $value, ReflectionClass $reflClass, array $singulars)
     {
         $methods = $this->findAdderAndRemover($reflClass, $singulars);
         // Use addXxx() and removeXxx() to write the collection
@@ -593,15 +601,15 @@ class PropertyAccessor implements PropertyAccessorInterface
         }
         //if the value we want to add is not an array and we try to add it to a collection,
         // then we don't want to overwrite the old values, instead add the new value to the collection
-        if ((!is_array($value) && !$value instanceof \Traversable)
-            && ($objectValue instanceof \ArrayAccess || is_array($objectValue))
+        if ((!is_array($value) && !$value instanceof Traversable)
+            && ($objectValue instanceof ArrayAccess || is_array($objectValue))
         ) {
             //we try to add a value to a collection and we don't want to remove old items
             $value = [$value];
             $shouldRemoveItems = false;
         }
 
-        if (is_array($value) || $value instanceof \Traversable) {
+        if (is_array($value) || $value instanceof Traversable) {
             $this->writeCollection($object, $property, $value, $addMethod, $removeMethod, $shouldRemoveItems);
 
             return true;
@@ -613,13 +621,14 @@ class PropertyAccessor implements PropertyAccessorInterface
     /**
      * Adjusts a collection-valued property by calling add*() and remove*() methods.
      *
-     * @param object             $object       The object to write to
-     * @param string             $property     The property to write
-     * @param array|\Traversable $collection   The collection to write
-     * @param string             $addMethod    The add*() method
-     * @param string             $removeMethod The remove*() method
-     * @param boolean            $shouldRemoveItems Flag that tells if we want to remove existing items
+     * @param object $object The object to write to
+     * @param string $property The property to write
+     * @param array|Traversable $collection The collection to write
+     * @param string $addMethod The add*() method
+     * @param string $removeMethod The remove*() method
+     * @param boolean $shouldRemoveItems Flag that tells if we want to remove existing items
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @throws ReflectionException
      */
     protected function writeCollection(
         $object,
@@ -638,7 +647,7 @@ class PropertyAccessor implements PropertyAccessorInterface
         $previousValue = $propertyValue[self::VALUE];
 
         if (is_array($previousValue)
-            || $previousValue instanceof \Traversable) {
+            || $previousValue instanceof Traversable) {
             foreach ($previousValue as $previousItem) {
                 foreach ($collection as $key => $item) {
                     if ($item === $previousItem) {
@@ -695,20 +704,20 @@ class PropertyAccessor implements PropertyAccessorInterface
      * @param array|object $object   The object or array to unset from
      * @param mixed        $property The property or index to unset
      *
-     * @throws Exception\NoSuchPropertyException If the property does not exist or is not public.
+     * @throws Exception\NoSuchPropertyException|ReflectionException If the property does not exist or is not public.
      *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     protected function unsetProperty(&$object, $property)
     {
-        if ($object instanceof \ArrayAccess) {
+        if ($object instanceof ArrayAccess) {
             if (isset($object[$property])) {
                 unset($object[$property]);
             }
         } elseif (is_array($object)) {
             unset($object[$property]);
         } elseif (is_object($object)) {
-            $reflClass = new \ReflectionClass($object);
+            $reflClass = new ReflectionClass($object);
             $unsetter  = 'remove' . $this->camelize($property);
 
             if ($this->isMethodAccessible($reflClass, $unsetter, 0)) {
@@ -753,12 +762,13 @@ class PropertyAccessor implements PropertyAccessorInterface
     /**
      * Searches for add and remove methods.
      *
-     * @param \ReflectionClass $reflClass The reflection class for the given object
-     * @param array            $singulars The singular form of the property name or null
+     * @param ReflectionClass $reflClass The reflection class for the given object
+     * @param array $singulars The singular form of the property name or null
      *
      * @return array|null An array containing the adder and remover when found, null otherwise
+     * @throws ReflectionException
      */
-    protected function findAdderAndRemover(\ReflectionClass $reflClass, array $singulars)
+    protected function findAdderAndRemover(ReflectionClass $reflClass, array $singulars)
     {
         foreach ($singulars as $singular) {
             $addMethod    = 'add' . $singular;
@@ -778,13 +788,14 @@ class PropertyAccessor implements PropertyAccessorInterface
     /**
      * Returns whether a method is public and has the number of required parameters.
      *
-     * @param \ReflectionClass $class      The class of the method
-     * @param string           $methodName The method name
-     * @param int              $parameters The number of parameters
+     * @param ReflectionClass $class The class of the method
+     * @param string $methodName The method name
+     * @param int $parameters The number of parameters
      *
      * @return bool Whether the method is public and has $parameters required parameters
+     * @throws ReflectionException
      */
-    protected function isMethodAccessible(\ReflectionClass $class, $methodName, $parameters)
+    protected function isMethodAccessible(ReflectionClass $class, $methodName, $parameters)
     {
         if ($this->hasPublicMethod($class, $methodName)) {
             $method = $class->getMethod($methodName);
@@ -827,6 +838,7 @@ class PropertyAccessor implements PropertyAccessorInterface
      * @param string $property
      *
      * @return array
+     * @throws ReflectionException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function getReadAccessInfo($class, $property)
@@ -838,7 +850,7 @@ class PropertyAccessor implements PropertyAccessorInterface
         } else {
             $access = [];
 
-            $reflClass = new \ReflectionClass($class);
+            $reflClass = new ReflectionClass($class);
             $access[self::ACCESS_HAS_PROPERTY] = $reflClass->hasProperty($property);
             $camelProp = $this->camelize($property);
             $getter = 'get'.$camelProp;
@@ -900,10 +912,11 @@ class PropertyAccessor implements PropertyAccessorInterface
      *
      * @param string $class
      * @param string $property
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @return array
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @throws ReflectionException
      */
     private function getWriteAccessInfo($class, $property, $value)
     {
@@ -914,14 +927,14 @@ class PropertyAccessor implements PropertyAccessorInterface
         } else {
             $access = [];
 
-            $reflClass = new \ReflectionClass($class);
+            $reflClass = new ReflectionClass($class);
             $access[self::ACCESS_HAS_PROPERTY] = $reflClass->hasProperty($property);
             $camelized = $this->camelize($property);
             $inflector = new EnglishInflector();
 
-            $singulars = (array)$inflector::singularize($camelized);
+            $singulars = (array)$inflector->singularize($camelized);
 
-            if (is_array($value) || $value instanceof \Traversable) {
+            if (is_array($value) || $value instanceof Traversable) {
                 $methods = $this->findAdderAndRemover($reflClass, $singulars);
 
                 if (null !== $methods) {
@@ -978,12 +991,13 @@ class PropertyAccessor implements PropertyAccessorInterface
     }
 
     /**
-     * @param \ReflectionClass $class
+     * @param ReflectionClass $class
      * @param string $methodName
      *
      * @return bool
+     * @throws ReflectionException
      */
-    private function hasPublicMethod(\ReflectionClass $class, $methodName)
+    private function hasPublicMethod(ReflectionClass $class, $methodName)
     {
         return $class->hasMethod($methodName) && $class->getMethod($methodName)->isPublic();
     }

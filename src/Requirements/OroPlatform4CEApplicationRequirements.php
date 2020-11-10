@@ -2,6 +2,8 @@
 
 namespace Programgames\OroDev\Requirements;
 
+use Exception;
+use NumberFormatter;
 use PDO;
 use Programgames\OroDev\Requirements\Tools\NodeJsExecutableFinder;
 use Programgames\OroDev\Requirements\Tools\NodeJsVersionChecker;
@@ -14,7 +16,7 @@ use Symfony\Requirements\SymfonyRequirements;
 /**
  * This class specifies all requirements and optional recommendations that are necessary to run the Oro Application.
  */
-class OroCommerce4EEApplicationApplicationRequirements extends SymfonyRequirements implements OroApplicationRequirementsInterface
+class OroPlatform4CEApplicationRequirements extends SymfonyRequirements implements OroApplicationRequirementsInterface
 {
     const REQUIRED_PHP_VERSION = '7.3.13';
     const REQUIRED_GD_VERSION = '2.0';
@@ -25,6 +27,7 @@ class OroCommerce4EEApplicationApplicationRequirements extends SymfonyRequiremen
 
     /**
      * @param string $env
+     * @throws Exception
      */
     public function __construct($env = 'prod')
     {
@@ -92,9 +95,9 @@ class OroCommerce4EEApplicationApplicationRequirements extends SymfonyRequiremen
         ];
 
         foreach ($localeCurrencies as $locale => $currencyCode) {
-            $numberFormatter = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
+            $numberFormatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
 
-            if ($currencyCode === $numberFormatter->getTextAttribute(\NumberFormatter::CURRENCY_CODE)) {
+            if ($currencyCode === $numberFormatter->getTextAttribute(NumberFormatter::CURRENCY_CODE)) {
                 unset($localeCurrencies[$locale]);
             }
         }
@@ -272,17 +275,68 @@ class OroCommerce4EEApplicationApplicationRequirements extends SymfonyRequiremen
             );
         }
 
+        // Check database configuration
         $configYmlPath = $baseDir . '/config/config_' . $env . '.yml';
         if (is_file($configYmlPath)) {
             $config = $this->getParameters($configYmlPath);
             $pdo = $this->getDatabaseConnection($config);
             if ($pdo) {
+                $requiredPrivileges = ['INSERT', 'SELECT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER', 'CREATE', 'DROP'];
+                $notGrantedPrivileges = $this->getNotGrantedPrivileges($pdo, $requiredPrivileges, $config);
+                $this->addOroRequirement(
+                    empty($notGrantedPrivileges),
+                    sprintf('%s database privileges must be granted', implode(', ', $requiredPrivileges)),
+                    sprintf('Grant %s privileges on database "%s" to user "%s"', implode(', ', $notGrantedPrivileges), $config['database_name'], $config['database_user'])
+                );
                 $this->addOroRequirement(
                     $this->isUuidSqlFunctionPresent($pdo),
                     'UUID SQL function must be present',
                     'Execute "<strong>CREATE EXTENSION IF NOT EXISTS "uuid-ossp";</strong>" SQL command so UUID-OSSP extension will be installed for database.'
                 );
             }
+
+            $this->addProcessorsRequirements(ProcessorHelper::JPEGOPTIM, $config);
+            $this->addProcessorsRequirements(ProcessorHelper::PNGQUANT, $config);
+        }
+    }
+
+    /**
+     * @param string $libraryName
+     * @param array $config
+     */
+    private function addProcessorsRequirements(string $libraryName, array $config): void
+    {
+        $library = null;
+        $recommendation = true;
+        $processorHelper = new ProcessorHelper(new ParameterBag($config));
+        [$libraryName, $version] = ProcessorVersionChecker::getLibraryInfo($libraryName);
+
+        try {
+            $library = $libraryName === ProcessorHelper::JPEGOPTIM
+                ? $processorHelper->getJPEGOptimLibrary()
+                : $processorHelper->getPNGQuantLibrary();
+        } catch (ProcessorsException $exception) {
+            $this->addOroRequirement(
+                null !== $library,
+                sprintf('Library `%s` is installed', $libraryName),
+                sprintf('Library `%s` not found or not executable.', $libraryName)
+            );
+            $recommendation = false;
+        } catch (ProcessorsVersionException $exception) {
+            $this->addOroRequirement(
+                null !== $library,
+                sprintf('Minimum required `%s` library version should be %s', $libraryName, $version),
+                sprintf('Minimum required `%s` library version should be %s', $libraryName, $version)
+            );
+            $library = $exception->getBinary();
+        }
+
+        if ($recommendation) {
+            $this->addRecommendation(
+                null !== $library,
+                sprintf('Library `%s` is installed', $libraryName),
+                sprintf('Library `%s` should be installed', $libraryName)
+            );
         }
     }
 
@@ -445,16 +499,35 @@ class OroCommerce4EEApplicationApplicationRequirements extends SymfonyRequiremen
     {
         if ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql') {
             try {
-                $version = $pdo->query("SELECT extversion FROM pg_extension WHERE extname = 'uuid-ossp'")->fetchColumn(
-                );
+                $version = $pdo->query("SELECT extversion FROM pg_extension WHERE extname = 'uuid-ossp'")->fetchColumn();
 
                 return !empty($version);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    /**
+     * @param PDO $pdo
+     * @param array $requiredPrivileges
+     * @param array $config
+     * @return array
+     */
+    protected function getNotGrantedPrivileges(PDO $pdo, array $requiredPrivileges, array $config): array
+    {
+        if ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql') {
+            $granted = DbPrivilegesProvider::getPostgresGrantedPrivileges($pdo, $config['database_name']);
+        } else {
+            $granted = DbPrivilegesProvider::getMySqlGrantedPrivileges($pdo, $config['database_name']);
+            if (in_array('ALL PRIVILEGES', $granted, true)) {
+                $granted = $requiredPrivileges;
+            }
+        }
+
+        return array_diff($requiredPrivileges, $granted);
     }
 
     /**
@@ -488,7 +561,7 @@ class OroCommerce4EEApplicationApplicationRequirements extends SymfonyRequiremen
                     $config['database_user'],
                     $config['database_password']
                 );
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return null;
             }
         }
@@ -499,6 +572,7 @@ class OroCommerce4EEApplicationApplicationRequirements extends SymfonyRequiremen
     /**
      * @param string $parametersYmlPath
      * @return array
+     * @throws Exception
      */
     protected function getParameters($parametersYmlPath)
     {
