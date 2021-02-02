@@ -355,7 +355,6 @@ class OroCommerce3EEApplicationRequirements extends SymfonyRequirements implemen
             case 'k':
             case 'kb':
                 $val *= 1024;
-            // no break
         }
 
         return (float)$val;

@@ -26,7 +26,7 @@ class CheckSystemRequirementsCommand extends Command
     {
         $this
             ->setDescription('Checks that the system meets the requirements.')
-            ->addOption('env', null, InputOption::VALUE_OPTIONAL, 'environment of the application', 'dev',)
+            ->addOption('env', null, InputOption::VALUE_OPTIONAL, 'environment of the application', 'dev')
             ->setHelp(
                 <<<EOT
 The <info>%command.name%</info> command checks that the system meets the requirements.

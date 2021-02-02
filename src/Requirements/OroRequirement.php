@@ -7,4 +7,3 @@ use Symfony\Requirements\Requirement;
 class OroRequirement extends Requirement
 {
 }
-

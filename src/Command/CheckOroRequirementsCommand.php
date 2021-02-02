@@ -31,7 +31,7 @@ class CheckOroRequirementsCommand extends Command
     {
         $this
             ->setDescription('Checks that the application meets the system requirements.')
-            ->addOption('env', null, InputOption::VALUE_OPTIONAL, 'environment of the application', 'dev',)
+            ->addOption('env', null, InputOption::VALUE_OPTIONAL, 'environment of the application', 'dev')
             ->setHelp(
                 <<<EOT
 The <info>%command.name%</info> command checks that the application meets the system requirements.
@@ -168,5 +168,4 @@ EOT
         }
         throw new RuntimeException('Application not supported');
     }
-
 }

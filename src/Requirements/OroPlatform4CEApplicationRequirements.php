@@ -427,7 +427,6 @@ class OroPlatform4CEApplicationRequirements extends SymfonyRequirements implemen
             case 'k':
             case 'kb':
                 $val *= 1024;
-            // no break
         }
 
         return (float)$val;

@@ -8,11 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ConfigureProjectCommand extends Command
 {
-
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-
     }
-
-
 }

@@ -4,12 +4,17 @@ namespace Programgames\OroDev\Requirements;
 
 use Programgames\OroDev\Requirements\Tools\ElasticSearchDaemonChecker;
 use Programgames\OroDev\Requirements\Tools\ElasticSearchExecutableFinder;
+use Programgames\OroDev\Requirements\Tools\MailcatcherExecutableFinder;
+use Programgames\OroDev\Requirements\Tools\MailcatcherDaemonChecker;
 use Programgames\OroDev\Requirements\Tools\PostgresDaemonChecker;
 use Programgames\OroDev\Requirements\Tools\PostgresExecutableFinder;
 use Programgames\OroDev\Requirements\Tools\ElasticSearchVersionChecker;
 use Programgames\OroDev\Requirements\Tools\PostgresVersionChecker;
 use Programgames\OroDev\Requirements\Tools\PsqlExecutableFinder;
 use Programgames\OroDev\Requirements\Tools\PsqlVersionChecker;
+use Programgames\OroDev\Requirements\Tools\RabbitMqDaemonChecker;
+use Programgames\OroDev\Requirements\Tools\RabbitMQExecutableFinder;
+use Programgames\OroDev\Requirements\Tools\RabbitMqVersionChecker;
 use Symfony\Requirements\RequirementCollection;
 
 class OroCommerce4SystemRequirements extends RequirementCollection
@@ -17,6 +22,7 @@ class OroCommerce4SystemRequirements extends RequirementCollection
     public const POSTGRES_VERSION = "~9.6";
     public const PSQL_VERSION = "~9.6";
     const ELASTIC_SEARCH_VERSION = "7.*";
+    const RABBIT_MQ_VERSION = ">=3.7.21";
 
     /**
      * OroDevRequirements constructor.
@@ -29,8 +35,7 @@ class OroCommerce4SystemRequirements extends RequirementCollection
         $this->addSystemRequirement(
             $postgresExist,
             sprintf('Postgres server must be installed'),
-            $postgresExist ? 'Postgres is installed' : 'Postgres must be installed',
-
+            $postgresExist ? 'Postgres is installed' : 'Postgres must be installed'
         );
         $postgresVersionChecker = new PostgresVersionChecker();
         $this->addSystemRequirement(
@@ -45,7 +50,7 @@ class OroCommerce4SystemRequirements extends RequirementCollection
         $this->addSystemRequirement(
             $psqlExist,
             sprintf('Psql server must be installed'),
-            $psqlExist ? 'Psql is installed' : 'Psql must be installed',
+            $psqlExist ? 'Psql is installed' : 'Psql must be installed'
         );
 
         $psqlVersionChecker = new PsqlVersionChecker();
@@ -68,7 +73,7 @@ class OroCommerce4SystemRequirements extends RequirementCollection
         $this->addSystemRequirement(
             $elasticSearchExist,
             sprintf('ElasticSearch must be installed'),
-            $elasticSearchExist ? 'ElasticSearch is installed' : 'ElasticSearch must be installed',
+            $elasticSearchExist ? 'ElasticSearch is installed' : 'ElasticSearch must be installed'
         );
 
         $elasticSearchVersionChecker = new ElasticSearchVersionChecker();
@@ -83,6 +88,45 @@ class OroCommerce4SystemRequirements extends RequirementCollection
             $elasticSearchDaemonChecker->isDaemonRunning(),
             sprintf('ElasticSearch daemon must be running'),
             sprintf('Run the ElasticSearch daemon')
+        );
+
+        $mailcatcherFinder = new MailcatcherExecutableFinder();
+        $mailcatcherExecutable = $mailcatcherFinder->findExecutable();
+        $mailcatcherExist = null !== $mailcatcherExecutable;
+        $this->addSystemRequirement(
+            $mailcatcherExist,
+            sprintf('Mailcatcher must be installed'),
+            $mailcatcherExist ? 'Mailcatcher is installed' : 'Mailcatcher must be installed'
+        );
+
+        $mailcatcherDaemonChecker = new MailcatcherDaemonChecker();
+        $this->addSystemRequirement(
+            $mailcatcherDaemonChecker->isDaemonRunning(),
+            sprintf('Mailcatcher daemon must be running'),
+            sprintf('Run the Mailcatcher daemon')
+        );
+
+        $rabbitMQExecutableFinder = new RabbitMQExecutableFinder();
+        $rabbitMQExecutable = $rabbitMQExecutableFinder->findExecutable();
+        $rabbitMQExist = null !== $rabbitMQExecutable;
+        $this->addSystemRequirement(
+            $rabbitMQExist,
+            sprintf('RabbitMQ must be installed'),
+            $rabbitMQExist ? 'RabbitMQ is installed' : 'RabbitMQ must be installed'
+        );
+
+        $rabbitMQVersionChecker = new RabbitMqVersionChecker();
+        $this->addSystemRequirement(
+            $rabbitMQVersionChecker->satisfies('rabbitmqctl', self::RABBIT_MQ_VERSION),
+            sprintf('RabbitMQ "%s" version must be installed', self::RABBIT_MQ_VERSION),
+            sprintf('Upgrade <strong>RabbitMQ</strong> to "%s" version. ! => check that RabbitMQ daemon is running first', self::RABBIT_MQ_VERSION)
+        );
+
+        $rabbitMQDaemonChecker = new RabbitMqDaemonChecker();
+        $this->addSystemRequirement(
+            $rabbitMQDaemonChecker->isDaemonRunning(),
+            sprintf('RabbitMQ daemon must be running'),
+            sprintf('Run the RabbitMQ daemon')
         );
     }
 

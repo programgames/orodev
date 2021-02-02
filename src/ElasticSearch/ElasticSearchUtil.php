@@ -6,8 +6,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ElasticSearchUtil
 {
-    public function  checkStatus(OutputInterface $output)
+    public function checkStatus(OutputInterface $output)
     {
-
     }
 }
