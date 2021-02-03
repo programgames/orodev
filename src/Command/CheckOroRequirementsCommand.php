@@ -3,10 +3,12 @@
 namespace Programgames\OroDev\Command;
 
 use MCStreetguy\ComposerParser\ComposerJson;
-use Programgames\OroDev\Requirements\OroCommerce3EEApplicationRequirements;
-use Programgames\OroDev\Requirements\OroPlatform4CEApplicationRequirements;
-use Programgames\OroDev\Requirements\OroPlatform4EEApplicationRequirements;
-use Programgames\OroDev\Requirements\OroApplicationRequirementsInterface;
+use Programgames\OroDev\Requirements\Application\OroApplicationRequirementsInterface;
+use Programgames\OroDev\Requirements\Application\OroCommerce3CEApplicationRequirements;
+use Programgames\OroDev\Requirements\Application\OroCommerce3EEApplicationRequirements;
+use Programgames\OroDev\Requirements\Application\OroPlatform3CEApplicationRequirements;
+use Programgames\OroDev\Requirements\Application\OroPlatform4CEApplicationRequirements;
+use Programgames\OroDev\Requirements\Application\OroPlatform4EEApplicationRequirements;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -122,6 +124,7 @@ EOT
      * @param InputInterface $input
      *
      * @return OroApplicationRequirementsInterface
+     * @throws \Exception
      */
     protected function getOroRequirements(InputInterface $input)
     {
@@ -149,7 +152,7 @@ EOT
                 return new OroPlatform4CEApplicationRequirements($input->getOption('env'));
             } else {
                 if (preg_match('/3./', $version)) {
-                    throw new RuntimeException('Not supported yet');
+                    return new OroCommerce3CEApplicationRequirements($input->getOption('env'));
                 } else {
                     throw new RuntimeException('Application version not supported');
                 }
@@ -160,7 +163,7 @@ EOT
                 return new OroPlatform4CEApplicationRequirements($input->getOption('env'));
             } else {
                 if (preg_match('/3./', $version)) {
-                    throw new RuntimeException('Not supported yet');
+                    return new OroPlatform3CEApplicationRequirements($input->getOption('env'));
                 } else {
                     throw new RuntimeException('Application version not supported');
                 }

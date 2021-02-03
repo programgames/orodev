@@ -2,13 +2,18 @@
 
 namespace Programgames\OroDev\Command;
 
-use Programgames\OroDev\Requirements\OroCommerce4SystemRequirements;
+use MCStreetguy\ComposerParser\ComposerJson;
+use Programgames\OroDev\Requirements\System\OroCommerce3EESystemRequirements;
+use Programgames\OroDev\Requirements\System\OroCommerce4EESystemRequirements;
+use Programgames\OroDev\Requirements\System\OroPlatform4CESystemRequirements;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Requirements\Requirement;
+use Symfony\Requirements\RequirementCollection;
 
 class CheckSystemRequirementsCommand extends Command
 {
@@ -47,12 +52,12 @@ EOT
     {
         $output->writeln('Check system requirements');
 
-        $oroDevRequirements = $this->getOroCommerce4SystemRequirements($input);
-        $this->renderTable($oroDevRequirements->getRequirements(), 'Optional recommendations', $output);
+        $oroSystemRequirements = $this->getOroSystemRequirements($input);
+        $this->renderTable($oroSystemRequirements->getRequirements(), 'Optional recommendations', $output);
 
         $exitCode = 0;
         $numberOfFailedRequirements = count(
-            $oroDevRequirements->getFailedRequirements()
+            $oroSystemRequirements->getFailedRequirements()
         );
         if ($numberOfFailedRequirements > 0) {
             $exitCode = 1;
@@ -113,10 +118,51 @@ EOT
     /**
      * @param InputInterface $input
      *
-     * @return OroCommerce4SystemRequirements
+     * @return RequirementCollection
      */
-    protected function getOroCommerce4SystemRequirements(InputInterface $input)
+    protected function getOroSystemRequirements(InputInterface $input)
     {
-        return new OroCommerce4SystemRequirements($input->getOption('env'));
+        $content = json_decode(file_get_contents(getcwd() . '/composer.json'), true);
+        if ($content === null) {
+            throw new RuntimeException('composer.json not found');
+        }
+        $composerJson = new ComposerJson($content);
+
+        $require = $composerJson->getRequire()->getData();
+        if (array_key_exists('oro/commerce-enterprise', $require)) {
+            $version = $require['oro/commerce-enterprise'];
+            if (preg_match('/4./', $version)) {
+                return new OroCommerce4EESystemRequirements($input->getOption('env'));
+            } else {
+                if (preg_match('/3./', $version)) {
+                    return new OroCommerce3EESystemRequirements($input->getOption('env'));
+                } else {
+                    throw new RuntimeException('Application version not supported');
+                }
+            }
+        } elseif (array_key_exists('oro/commerce', $require)) {
+            $version = $require['oro/commerce'];
+            if (preg_match('/4./', $version)) {
+                return new OroPlatform4CESystemRequirements($input->getOption('env'));
+            } else {
+                if (preg_match('/3./', $version)) {
+                    throw new RuntimeException('Not supported yet');
+                } else {
+                    throw new RuntimeException('Application version not supported');
+                }
+            }
+        } elseif (array_key_exists('oro/platform', $require)) {
+            $version = $require['oro/platform'];
+            if (preg_match('/4./', $version)) {
+                return new OroPlatform3CESystemRequirements($input->getOption('env'));
+            } else {
+                if (preg_match('/3./', $version)) {
+                    throw new RuntimeException('Not supported yet');
+                } else {
+                    throw new RuntimeException('Application version not supported');
+                }
+            }
+        }
+        throw new RuntimeException('Application not supported');
     }
 }

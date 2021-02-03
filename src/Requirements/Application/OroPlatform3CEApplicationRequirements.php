@@ -1,11 +1,13 @@
 <?php
 
-namespace Programgames\OroDev\Requirements;
+namespace Programgames\OroDev\Requirements\Application;
 
 use Exception;
 use PDO;
+use Programgames\OroDev\Requirements\OroRequirement;
 use Programgames\OroDev\Requirements\Tools\NodeJsExecutableFinder;
 use Programgames\OroDev\Requirements\Tools\NodeJsVersionChecker;
+use Programgames\OroDev\Requirements\YamlFileLoader;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Intl\Intl;
 use Symfony\Component\Process\Process;
@@ -15,7 +17,7 @@ use Symfony\Requirements\SymfonyRequirements;
 /**
  * This class specifies all requirements and optional recommendations that are necessary to run the Oro Application.
  */
-class OroCommerce3EEApplicationRequirements extends SymfonyRequirements implements OroApplicationRequirementsInterface
+class OroPlatform3CEApplicationRequirements extends SymfonyRequirements implements OroApplicationRequirementsInterface
 {
     const REQUIRED_PHP_VERSION = '7.1.26';
     const REQUIRED_GD_VERSION = '2.0';

@@ -1,6 +1,6 @@
 <?php
 
-namespace Programgames\OroDev\Requirements;
+namespace Programgames\OroDev\Requirements\System;
 
 use Symfony\Requirements\Requirement;
 

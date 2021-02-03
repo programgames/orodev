@@ -1,6 +1,6 @@
 <?php
 
-namespace Programgames\OroDev\Requirements;
+namespace Programgames\OroDev\Requirements\Application;
 
 use Exception;
 use NumberFormatter;

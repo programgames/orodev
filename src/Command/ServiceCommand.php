@@ -16,11 +16,11 @@ class ServiceCommand extends ColoredCommand
     {
         $this
             ->setDescription('Start service.')
-            ->addArgument('mode', InputArgument::REQUIRED, 'start/stop/restart')
-            ->addArgument('service', InputArgument::REQUIRED, 'start/stop/restart the specified service')
+            ->addArgument('mode', InputArgument::REQUIRED, 'start/stop/restart/version ')
+            ->addArgument('service', InputArgument::REQUIRED, 'start/stop/restart/get version the specified service')
             ->setHelp(
                 <<<EOT
-The <info>%command.name%</info> start/stop/restart the specified service.
+The <info>%command.name%</info> start/stop/restart/version the specified service.
 
 Actual service list : postgres, mailcatcher, rabbitmq, elasticsearch, kibana
 By default this command shows only errors, but you can specify the verbosity level to see warnings
@@ -42,6 +42,8 @@ EOT
                 return $this->stopService($output, $input->getArgument('service'));
             case 'restart':
                 return $this->restartService($output, $input->getArgument('service'));
+            case 'version':
+                return $this->checkServiceVersion($output, $input->getArgument('service'));
             default:
                 $this->error($output, 'Unknow mode');
                 return -1;
@@ -91,6 +93,18 @@ EOT
         $processCode = $this->runProcess($command, $output);
 
         $output->writeln(sprintf('Service %s restarted  ...', $service));
+
+        return $processCode;
+    }
+
+    protected function checkServiceVersion(OutputInterface $output, string $service): int
+    {
+        if (!$this->checkServiceName($service)) {
+            $this->error($output, 'Unknow service');
+            return -1;
+        }
+        $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.version_command', $service)));
+        $processCode = $this->runProcess($command, $output);
 
         return $processCode;
     }

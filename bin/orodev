@@ -3,6 +3,9 @@
 
 require  __DIR__ . '/../vendor/autoload.php';
 
+use Programgames\OroDev\Command\CheckOroRequirementsCommand;
+use Programgames\OroDev\Command\CheckSystemRequirementsCommand;
+use Programgames\OroDev\Command\ServiceCommand;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -11,11 +14,9 @@ $app = new Application('Oro dev tools');
 
 $app->addCommands(
     [
-        new \Programgames\OroDev\Command\HelpCommand(),
-        new \Programgames\OroDev\Command\CheckOroRequirementsCommand(
-        ),
-        new \Programgames\OroDev\Command\CheckSystemRequirementsCommand(
-        )
+        new CheckOroRequirementsCommand(),
+        new CheckSystemRequirementsCommand(),
+        new ServiceCommand(),
     ]
 );
 

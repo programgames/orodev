@@ -1,3 +1,28 @@
-orodev:
-    postgres:
-        password: 'test'
+parameters:
+    service:
+        postgres:
+            password: 
+            start_command: brew services start postgresql@9.6
+            stop_command: brew services stop postgresql@9.6
+            restart_command: brew services restart postgresql@9.6
+            version_command: postgres --version
+        mailcatcher:
+            start_command: mailcatcher
+            stop_command: curl -X "DELETE" http://localhost:1080/
+        rabbitmq:
+            start_command: brew services start rabbitmq
+            stop_command: brew services stop rabbitmq
+            restart_command: brew services restart  rabbitmq
+            version_command: rabbitmqctl version
+            user: guest
+            password: guest
+        elasticsearch:
+            start_command: brew services start elasticsearch-full
+            stop_command: brew services stop elasticsearch-full
+            restart_command: brew services restart elasticsearch-full
+            version_command: elasticsearch --version
+        kibana:
+            start_command: brew services start kibana-ful
+            stop_command: brew services stop kibana-ful
+            restart_command: brew services restart kibana-full
+            version_command: kibana --version
