@@ -1,0 +1,95 @@
+<?php
+
+/*
+ * This document has been generated with
+ * https://mlocati.github.io/php-cs-fixer-configurator/#version:2.18.2|configurator
+ * you can change this configuration by importing this file.
+ */
+return PhpCsFixer\Config::create()
+    ->setRiskyAllowed(true)
+    ->setRules(
+        [
+            '@DoctrineAnnotation' => true,
+            '@PHP56Migration' => true,
+            '@PHP70Migration' => true,
+            '@PHP54Migration' => true,
+            '@PHP56Migration:risky' => true,
+            '@PHP70Migration:risky' => true,
+            '@PHP71Migration' => true,
+            '@PHP71Migration:risky' => true,
+            '@PHP73Migration' => true,
+            '@PHP74Migration' => true,
+            '@PHP74Migration:risky' => true,
+            '@PHP80Migration' => true,
+            '@PHPUnit30Migration:risky' => true,
+            '@PHPUnit32Migration:risky' => true,
+            '@PHPUnit35Migration:risky' => true,
+            '@PHPUnit43Migration:risky' => true,
+            '@PHPUnit48Migration:risky' => true,
+            '@PHPUnit50Migration:risky' => true,
+            '@PHPUnit52Migration:risky' => true,
+            '@PHPUnit54Migration:risky' => true,
+            '@PHPUnit55Migration:risky' => true,
+            '@PHPUnit56Migration:risky' => true,
+            '@PHPUnit57Migration:risky' => true,
+            '@PHPUnit60Migration:risky' => true,
+            '@PHPUnit75Migration:risky' => true,
+            '@PHPUnit84Migration:risky' => true,
+            '@PSR1' => true,
+            '@PSR12' => true,
+            '@Symfony' => true,
+            '@Symfony:risky' => true,
+            'array_syntax' => ['syntax' => 'short'],
+            'blank_line_after_opening_tag' => true,
+            'clean_namespace' => true,
+            'combine_nested_dirname' => true,
+            'compact_nullable_typehint' => true,
+            'constant_case' => ['case' => 'lower'],
+            'declare_strict_types' => true,
+            'echo_tag_syntax' => ['format' => 'short'],
+            'encoding' => true,
+            'full_opening_tag' => true,
+            'general_phpdoc_tag_rename' => true,
+            'heredoc_indentation' => ['indentation' => 'same_as_start'],
+            'line_ending' => true,
+            'linebreak_after_opening_tag' => true,
+            'list_syntax' => ['syntax' => 'short'],
+            'lowercase_keywords' => true,
+            'native_function_casing' => true,
+            'no_blank_lines_after_phpdoc' => true,
+            'no_closing_tag' => true,
+            'no_empty_phpdoc' => true,
+            'no_php4_constructor' => true,
+            'no_superfluous_phpdoc_tags' => ['allow_mixed' => true],
+            'no_trailing_comma_in_singleline_array' => true,
+            'no_trailing_whitespace_in_comment' => true,
+            'php_unit_construct' => true,
+            'php_unit_dedicate_assert' => true,
+            'php_unit_dedicate_assert_internal_type' => true,
+            'php_unit_expectation' => true,
+            'php_unit_fqcn_annotation' => true,
+            'php_unit_method_casing' => true,
+            'php_unit_mock' => true,
+            'php_unit_mock_short_will_return' => true,
+            'php_unit_namespaced' => true,
+            'php_unit_no_expectation_annotation' => true,
+            'php_unit_set_up_tear_down_visibility' => true,
+            'php_unit_test_annotation' => ['case' => 'camel'],
+            'phpdoc_align' => ['align' => 'left'],
+            'phpdoc_annotation_without_dot' => true,
+            'phpdoc_indent' => true,
+            'phpdoc_inline_tag_normalizer' => true,
+            'phpdoc_no_access' => true,
+            'phpdoc_no_alias_tag' => true,
+            'phpdoc_no_package' => true,
+            'phpdoc_no_useless_inheritdoc' => true,
+            'phpdoc_return_self_reference' => true,
+            'phpdoc_scalar' => true,
+            'phpdoc_separation' => true,
+        ]
+    )
+    ->setFinder(
+        PhpCsFixer\Finder::create()
+            ->exclude('vendor')
+            ->in(__DIR__)
+    );

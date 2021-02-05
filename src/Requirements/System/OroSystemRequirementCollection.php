@@ -2,8 +2,8 @@
 
 namespace Programgames\OroDev\Requirements\System;
 
-use Programgames\OroDev\Requirements\Tools\MailcatcherExecutableFinder;
 use Programgames\OroDev\Requirements\Tools\MailcatcherDaemonChecker;
+use Programgames\OroDev\Requirements\Tools\MailcatcherExecutableFinder;
 use Programgames\OroDev\Requirements\Tools\PostgresDaemonChecker;
 use Programgames\OroDev\Requirements\Tools\PostgresExecutableFinder;
 use Programgames\OroDev\Requirements\Tools\PostgresVersionChecker;
@@ -11,15 +11,9 @@ use Programgames\OroDev\Requirements\Tools\PsqlExecutableFinder;
 use Programgames\OroDev\Requirements\Tools\PsqlVersionChecker;
 use Symfony\Requirements\RequirementCollection;
 
-class OroPlatform3CESystemRequirements extends RequirementCollection
+class OroSystemRequirementCollection extends RequirementCollection implements PostgresAndPSQLCheckerInterface
 {
-    public const POSTGRES_VERSION = "~9.6";
-    public const PSQL_VERSION = "~9.6";
-
-    /**
-     * OroDevRequirements constructor.
-     */
-    public function __construct($env = 'prod')
+    public function checkPostgresAndPSQL(string $postgresVersion, string $psqlVersion)
     {
         $postgresFinder = new PostgresExecutableFinder();
         $postgresExecutable = $postgresFinder->findExecutable();
@@ -31,9 +25,9 @@ class OroPlatform3CESystemRequirements extends RequirementCollection
         );
         $postgresVersionChecker = new PostgresVersionChecker();
         $this->addSystemRequirement(
-            $postgresVersionChecker->satisfies($postgresExecutable, self::POSTGRES_VERSION),
-            sprintf('Postgres "%s" version must be installed.', self::POSTGRES_VERSION),
-            sprintf('Upgrade <strong>Postgres</strong> to "%s" version.', self::POSTGRES_VERSION)
+            $postgresVersionChecker->satisfies($postgresExecutable, $postgresVersion),
+            sprintf('Postgres "%s" version must be installed.', $postgresVersion),
+            sprintf('Upgrade <strong>Postgres</strong> to "%s" version.', $postgresVersion)
         );
 
         $psqlFinder = new PsqlExecutableFinder();
@@ -47,9 +41,9 @@ class OroPlatform3CESystemRequirements extends RequirementCollection
 
         $psqlVersionChecker = new PsqlVersionChecker();
         $this->addSystemRequirement(
-            $psqlVersionChecker->satisfies($psqlExecutable, self::PSQL_VERSION),
-            sprintf('Psql "%s" version must be installed.', self::PSQL_VERSION),
-            sprintf('Upgrade <strong>Psql</strong> to "%s" version.', self::PSQL_VERSION)
+            $psqlVersionChecker->satisfies($psqlExecutable, $psqlVersion),
+            sprintf('Psql "%s" version must be installed.', $psqlVersion),
+            sprintf('Upgrade <strong>Psql</strong> to "%s" version.', $psqlVersion)
         );
 
         $postgresDaemonChecker = new PostgresDaemonChecker();
@@ -75,7 +69,7 @@ class OroPlatform3CESystemRequirements extends RequirementCollection
             sprintf('Run the Mailcatcher daemon')
         );
     }
-
+    
     /**
      * Adds an OroDev specific requirement.
      *
@@ -84,8 +78,8 @@ class OroPlatform3CESystemRequirements extends RequirementCollection
      * @param string $helpHtml The help text formatted in HTML for resolving the problem
      * @param string|null $helpText The help text (when null, it will be inferred from $helpHtml, i.e. stripped from HTML tags)
      */
-    public function addSystemRequirement($fulfilled, $testMessage, $helpHtml, $helpText = null)
+    public function addSystemRequirement(bool $fulfilled, string $testMessage, string $helpHtml, $helpText = null)
     {
-        $this->add(new SystemRequirement($fulfilled, $testMessage, $helpHtml, $helpText, false));
+        $this->add(new OroSystemRequirement($fulfilled, $testMessage, $helpHtml, $helpText, false));
     }
 }

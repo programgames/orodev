@@ -7,7 +7,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class OroDevConfig implements ConfigurationInterface
 {
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('orodev');
 
@@ -47,6 +47,7 @@ class OroDevConfig implements ConfigurationInterface
                                 ->scalarNode('stop_command')->end()
                                 ->scalarNode('restart_command')->end()
                                 ->scalarNode('version_command')->end()
+                                ->scalarNode('logs_command')->end()
                             ->end()
                         ->end()
                         ->arrayNode('kibana')

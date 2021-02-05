@@ -2,6 +2,7 @@
 
 namespace Programgames\OroDev\Command;
 
+use Exception;
 use MCStreetguy\ComposerParser\ComposerJson;
 use Programgames\OroDev\Requirements\Application\OroApplicationRequirementsInterface;
 use Programgames\OroDev\Requirements\Application\OroCommerce3CEApplicationRequirements;
@@ -9,17 +10,17 @@ use Programgames\OroDev\Requirements\Application\OroCommerce3EEApplicationRequir
 use Programgames\OroDev\Requirements\Application\OroPlatform3CEApplicationRequirements;
 use Programgames\OroDev\Requirements\Application\OroPlatform4CEApplicationRequirements;
 use Programgames\OroDev\Requirements\Application\OroPlatform4EEApplicationRequirements;
+use Programgames\OroDev\Requirements\RenderTableTrait;
 use RuntimeException;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Requirements\Requirement;
 
-class CheckOroRequirementsCommand extends Command
+class CheckOroRequirementsCommand extends ColoredCommand
 {
     public static $defaultName = 'check:oro';
+
+    use RenderTableTrait;
 
     /**
      * CheckRequirementsCommand constructor.
@@ -50,13 +51,18 @@ EOT
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Check application requirements');
 
-        $oroRequirements = $this->getOroRequirements($input);
+        try {
+            $oroRequirements = $this->getOroRequirements($input);
+        } catch (Exception $e) {
+            $this->error($output, $e->getMessage());
+            return -1;
+        }
         $this->renderTable($oroRequirements->getMandatoryRequirements(), 'Mandatory requirements', $output);
-        $this->renderTable($oroRequirements->getPhpIniRequirements(), 'PHP settings', $output);
+        $this->renderTable($oroRequirements->getPhpConfigRequirements(), 'PHP settings', $output);
         $this->renderTable($oroRequirements->getOroRequirements(), 'Oro specific requirements', $output);
         $this->renderTable($oroRequirements->getRecommendations(), 'Optional recommendations', $output);
 
@@ -84,47 +90,10 @@ EOT
     }
 
     /**
-     * @param Requirement[] $requirements
-     * @param string $header
-     * @param OutputInterface $output
-     */
-    protected function renderTable(array $requirements, $header, OutputInterface $output)
-    {
-        $rows = [];
-        $verbosity = $output->getVerbosity();
-        foreach ($requirements as $requirement) {
-            if ($requirement->isFulfilled()) {
-                if ($verbosity >= OutputInterface::VERBOSITY_VERY_VERBOSE) {
-                    $rows[] = ['OK', $requirement->getTestMessage()];
-                }
-            } elseif ($requirement->isOptional()) {
-                if ($verbosity >= OutputInterface::VERBOSITY_VERBOSE) {
-                    $rows[] = ['WARNING', $requirement->getHelpText()];
-                }
-            } else {
-                if ($verbosity >= OutputInterface::VERBOSITY_NORMAL) {
-                    $rows[] = ['ERROR', $requirement->getHelpText()];
-                }
-            }
-        }
-
-        if (!empty($rows)) {
-            $table = new Table($output);
-            $table
-                ->setHeaders(['Check  ', $header])
-                ->setRows([]);
-            foreach ($rows as $row) {
-                $table->addRow($row);
-            }
-            $table->render();
-        }
-    }
-
-    /**
      * @param InputInterface $input
      *
      * @return OroApplicationRequirementsInterface
-     * @throws \Exception
+     * @throws Exception
      */
     protected function getOroRequirements(InputInterface $input)
     {

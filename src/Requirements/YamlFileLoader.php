@@ -14,7 +14,7 @@ class YamlFileLoader extends FileLoader
     /**
      * {@inheritdoc}
      */
-    public function load($resource, string $type = null)
+    public function load($resource, string $type = null): array
     {
         $path = $this->locator->locate($resource);
 
@@ -43,7 +43,7 @@ class YamlFileLoader extends FileLoader
     /**
      * {@inheritdoc}
      */
-    public function supports($resource, string $type = null)
+    public function supports($resource, string $type = null): bool
     {
         return is_string($resource) && in_array(pathinfo($resource, PATHINFO_EXTENSION), array('yml', 'yaml'), true);
     }
@@ -57,7 +57,7 @@ class YamlFileLoader extends FileLoader
      * @throws FileLoaderImportCircularReferenceException
      * @throws LoaderLoadException
      */
-    private function parseImports($content, $file)
+    private function parseImports(array $content, string $file): array
     {
         if (!isset($content['imports'])) {
             return array();

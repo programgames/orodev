@@ -8,7 +8,7 @@ use Symfony\Component\Process\Process;
 
 class PsqlVersionChecker implements SatisfyingInterface
 {
-    public function satisfies(string $executable, string $constraints): bool
+    public static function satisfies(string $executable, string $constraints): bool
     {
         $process = new Process([$executable, '-V']);
         $process->run();

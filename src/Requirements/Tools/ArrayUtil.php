@@ -2,6 +2,7 @@
 
 namespace Programgames\OroDev\Requirements\Tools;
 
+use ReflectionException;
 use Symfony\Component\PropertyAccess\PropertyPathInterface;
 
 /**
@@ -22,7 +23,7 @@ class ArrayUtil
      *
      * @return array
      */
-    public static function interpose($separator, array $array)
+    public static function interpose($separator, array $array): array
     {
         $result = [];
         foreach ($array as $element) {
@@ -41,7 +42,7 @@ class ArrayUtil
      *
      * @return bool
      */
-    public static function isAssoc(array $array)
+    public static function isAssoc(array $array): bool
     {
         return array_values($array) !== $array;
     }
@@ -53,13 +54,14 @@ class ArrayUtil
      * Please use this method only if you really need stable sorting because this method is not so fast
      * as native PHP sort functions.
      *
-     * @param array $array        The array to be sorted
-     * @param bool  $reverse      Indicates whether the sorting should be performed
+     * @param array $array The array to be sorted
+     * @param bool $reverse Indicates whether the sorting should be performed
      *                            in reverse order
      * @param mixed $propertyPath The property accessor. Can be string or PropertyPathInterface or callable
-     * @param int   $sortingFlags The sorting type. Can be SORT_NUMERIC or SORT_STRING
+     * @param int $sortingFlags The sorting type. Can be SORT_NUMERIC or SORT_STRING
      *                            Also SORT_STRING can be combined with SORT_FLAG_CASE to sort
      *                            strings case-insensitively
+     * @throws ReflectionException
      */
     public static function sortBy(
         array &$array,
@@ -102,7 +104,7 @@ class ArrayUtil
      *
      * @return int
      */
-    private static function compare($a, $b, $stringComparison = false)
+    private static function compare($a, $b, $stringComparison = false): int
     {
         if ($a === $b) {
             return 0;
@@ -116,19 +118,25 @@ class ArrayUtil
     }
 
     /**
-     * @param array                                 $array
+     * @param array $array
      * @param string|PropertyPathInterface|callable $propertyPath
-     * @param bool                                  $reverse
-     * @param bool                                  $stringComparison
-     * @param bool                                  $caseInsensitive
+     * @param bool $reverse
+     * @param bool $stringComparison
+     * @param bool $caseInsensitive
      *
      * @return array|null
      *
+     * @throws ReflectionException
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    private static function prepareSortable($array, $propertyPath, $reverse, $stringComparison, $caseInsensitive)
-    {
+    private static function prepareSortable(
+        array $array,
+        $propertyPath,
+        bool $reverse,
+        bool $stringComparison,
+        bool $caseInsensitive
+    ): ?array {
         $propertyAccessor     = new PropertyAccessor();
         $isSimplePropertyPath = is_string($propertyPath) && !preg_match('/.\[/', $propertyPath);
         $isCallback           = is_callable($propertyPath);
@@ -174,12 +182,12 @@ class ArrayUtil
 
     /**
      * @param array $sortable
-     * @param bool  $stringComparison
-     * @param bool  $reverse
+     * @param bool $stringComparison
+     * @param bool $reverse
      *
      * @return array
      */
-    private static function getSortedKeys($sortable, $stringComparison, $reverse)
+    private static function getSortedKeys(array $sortable, bool $stringComparison, bool $reverse): array
     {
         uasort(
             $sortable,
@@ -228,7 +236,7 @@ class ArrayUtil
      *
      * @return boolean
      */
-    public static function some(callable $callback, array $array)
+    public static function some(callable $callback, array $array): bool
     {
         foreach ($array as $item) {
             if (call_user_func($callback, $item)) {
@@ -266,7 +274,7 @@ class ArrayUtil
      *
      * @return array
      */
-    public static function dropWhile(callable $callback, array $array)
+    public static function dropWhile(callable $callback, array $array): array
     {
         foreach ($array as $key => $value) {
             if (!call_user_func($callback, $value)) {
@@ -288,7 +296,7 @@ class ArrayUtil
      *
      * @return array
      */
-    public static function arrayMergeRecursiveDistinct(array $first, array $second)
+    public static function arrayMergeRecursiveDistinct(array $first, array $second): array
     {
         foreach ($second as $idx => $value) {
             if (is_integer($idx)) {
@@ -321,7 +329,7 @@ class ArrayUtil
      *
      * @return array
      */
-    public static function intRanges(array $ints)
+    public static function intRanges(array $ints): array
     {
         $ints = array_unique($ints);
         sort($ints);
@@ -364,7 +372,7 @@ class ArrayUtil
      *
      * @return array
      */
-    public static function unsetPath(array $array, array $path)
+    public static function unsetPath(array $array, array $path): array
     {
         $key = array_shift($path);
 
@@ -391,6 +399,7 @@ class ArrayUtil
      * @param mixed $defaultValue
      *
      * @return mixed
+     * @throws ReflectionException
      */
     public static function getIn(array $array, array $path, $defaultValue = null)
     {

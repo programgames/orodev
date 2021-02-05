@@ -32,8 +32,8 @@ class DbPrivilegesProvider
             WHERE table_catalog = :tableSchema
             AND table_name = :tableName"
         );
-        $stmt->bindValue('tableSchema', $dbName, PDO::PARAM_STR);
-        $stmt->bindValue('tableName', 'oro_privileges_check', PDO::PARAM_STR);
+        $stmt->bindValue('tableSchema', $dbName);
+        $stmt->bindValue('tableName', 'oro_privileges_check');
         $stmt->execute();
 
         $granted = array_merge(
@@ -76,9 +76,6 @@ class DbPrivilegesProvider
             }
         }
 
-        $granted = array_merge(...$grantedPrivileges);
-        array_unique($granted);
-
-        return $granted;
+        return array_unique(array_merge(...$grantedPrivileges));
     }
 }

@@ -3,6 +3,7 @@
 namespace Programgames\OroDev\Command;
 
 use Programgames\OroDev\Config\ConfigHelper;
+use Programgames\OroDev\Exception\ParameterNotFoundException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -33,28 +34,57 @@ EOT
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         switch ($input->getArgument('mode')) {
             case 'start':
-                return $this->startService($output, $input->getArgument('service'));
+                try {
+                    return $this->startService($output, $input->getArgument('service'));
+                } catch (ParameterNotFoundException $e) {
+                    $this->error($output, $e->getMessage());
+                    return -1;
+                }
             case 'stop':
-                return $this->stopService($output, $input->getArgument('service'));
+                try {
+                    return $this->stopService($output, $input->getArgument('service'));
+                } catch (ParameterNotFoundException $e) {
+                    $this->error($output, $e->getMessage());
+                    return -1;
+                }
             case 'restart':
-                return $this->restartService($output, $input->getArgument('service'));
+                try {
+                    return $this->restartService($output, $input->getArgument('service'));
+                } catch (ParameterNotFoundException $e) {
+                    $this->error($output, $e->getMessage());
+                    return -1;
+                }
             case 'version':
-                return $this->checkServiceVersion($output, $input->getArgument('service'));
+                try {
+                    return $this->checkServiceVersion($output, $input->getArgument('service'));
+                } catch (ParameterNotFoundException $e) {
+                    $this->error($output, $e->getMessage());
+                    return -1;
+                }
+            case  'logs':
+                return $this->displayLogs($output, $input->getArgument('service'));
             default:
-                $this->error($output, 'Unknow mode');
+                $this->error($output, 'Unknown mode');
                 return -1;
         }
     }
 
+    /**
+     * @param OutputInterface $output
+     * @param string $service
+     * @return int
+     * @throws ParameterNotFoundException
+     */
     protected function startService(OutputInterface $output, string $service): int
     {
         $output->writeln(sprintf('Starting service %s ...', $service));
         if (!$this->checkServiceName($service)) {
-            $this->error($output, 'Unknow service');
+            $this->error($output, 'Unknown service');
             return -1;
         }
         $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.start_command', $service)));
@@ -64,11 +94,17 @@ EOT
         return $processCode;
     }
 
+    /**
+     * @param OutputInterface $output
+     * @param string $service
+     * @return int
+     * @throws ParameterNotFoundException
+     */
     protected function stopService(OutputInterface $output, string $service): int
     {
         $output->writeln(sprintf('Stopping service %s ...', $service));
         if (!$this->checkServiceName($service)) {
-            $this->error($output, 'Unknow service');
+            $this->error($output, 'Unknown service');
             return -1;
         }
 
@@ -80,11 +116,17 @@ EOT
         return $processCode;
     }
 
+    /**
+     * @param OutputInterface $output
+     * @param string $service
+     * @return int
+     * @throws ParameterNotFoundException
+     */
     protected function restartService(OutputInterface $output, string $service): int
     {
         $output->writeln(sprintf('Restarting service %s ...', $service));
         if (!$this->checkServiceName($service)) {
-            $output->writeln('Unknow service');
+            $output->writeln('Unknown service');
             return -1;
         }
 
@@ -97,16 +139,20 @@ EOT
         return $processCode;
     }
 
+    /**
+     * @param OutputInterface $output
+     * @param string $service
+     * @return int
+     * @throws ParameterNotFoundException
+     */
     protected function checkServiceVersion(OutputInterface $output, string $service): int
     {
         if (!$this->checkServiceName($service)) {
-            $this->error($output, 'Unknow service');
+            $this->error($output, 'Unknown service');
             return -1;
         }
         $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.version_command', $service)));
-        $processCode = $this->runProcess($command, $output);
-
-        return $processCode;
+        return $this->runProcess($command, $output);
     }
 
     protected function checkServiceName(string $serviceName): bool
@@ -117,7 +163,7 @@ EOT
         );
     }
 
-    protected function runProcess(array $command, OutputInterface $output)
+    protected function runProcess(array $command, OutputInterface $output): int
     {
         $process = new Process($command);
         $process->run();
@@ -129,5 +175,22 @@ EOT
         $this->info($output, $process->getOutput());
 
         return 0;
+    }
+
+    /**
+     * @param OutputInterface $output
+     * @param string $service
+     * @return int
+     * @throws ParameterNotFoundException
+     */
+    private function displayLogs(OutputInterface $output, string $service): int
+    {
+        if (!$this->checkServiceName($service)) {
+            $this->error($output, 'Unknown service');
+            return -1;
+        }
+        $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.logs_command', $service)));
+
+        return $this->runProcess($command, $output);
     }
 }

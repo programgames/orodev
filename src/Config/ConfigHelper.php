@@ -10,6 +10,11 @@ use Symfony\Component\Yaml\Yaml;
 
 class ConfigHelper
 {
+    /**
+     * @param $parameter
+     * @return mixed
+     * @throws ParameterNotFoundException
+     */
     public static function getParameter($parameter)
     {
         $directory = __DIR__ . '/../../config/config.yml';
@@ -39,7 +44,7 @@ class ConfigHelper
         $paths = [];
         foreach ($iterator as $k => $v) { // Loop thru each iterator
 
-            if (!$iterator->hasChildren()) {
+            if (!$iterator->callHasChildren()) {
                 for ($p = array(), $i = 0, $z = $iterator->getDepth(); $i <= $z; $i++) {
                     $p[] = $iterator->getSubIterator($i)->key();
                 }

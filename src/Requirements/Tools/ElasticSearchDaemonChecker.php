@@ -9,19 +9,14 @@ class ElasticSearchDaemonChecker implements DaemonCheckerInterface
 {
     public function isDaemonRunning(): bool
     {
-        $process = new Process(['launchctl', 'list']);
+        $process = new Process(['brew', 'services', 'list']);
         $process->run();
         if (!$process->isSuccessful()) {
             return false;
         }
-        $running = preg_match('/.*elasticsearch.*/', $process->getOutput(), $matches);
-        if (!$running) {
-            return false;
-        }
-        if (LaunchCtlParser::getPid($matches[0])) {
-            return false;
-        }
-        return true;
+        preg_match('/.*elasticsearch.*/', $process->getOutput(), $matches);
+
+        return BrewServiceParser::isServiceRunning(reset($matches));
     }
 
     public function getRunningPort(): int

@@ -3,21 +3,22 @@
 namespace Programgames\OroDev\Command;
 
 use MCStreetguy\ComposerParser\ComposerJson;
+use Programgames\OroDev\Requirements\RenderTableTrait;
 use Programgames\OroDev\Requirements\System\OroCommerce3EESystemRequirements;
 use Programgames\OroDev\Requirements\System\OroCommerce4EESystemRequirements;
 use Programgames\OroDev\Requirements\System\OroPlatform4CESystemRequirements;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Requirements\Requirement;
 use Symfony\Requirements\RequirementCollection;
 
 class CheckSystemRequirementsCommand extends Command
 {
     public static $defaultName = 'check:system';
+
+    use RenderTableTrait;
 
     /**
      * CheckRequirementsCommand constructor.
@@ -48,7 +49,7 @@ EOT
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Check system requirements');
 
@@ -76,43 +77,6 @@ EOT
         }
 
         return $exitCode;
-    }
-
-    /**
-     * @param Requirement[] $requirements
-     * @param string $header
-     * @param OutputInterface $output
-     */
-    protected function renderTable(array $requirements, $header, OutputInterface $output)
-    {
-        $rows = [];
-        $verbosity = $output->getVerbosity();
-        foreach ($requirements as $requirement) {
-            if ($requirement->isFulfilled()) {
-                if ($verbosity >= OutputInterface::VERBOSITY_VERY_VERBOSE) {
-                    $rows[] = ['OK', $requirement->getTestMessage()];
-                }
-            } elseif ($requirement->isOptional()) {
-                if ($verbosity >= OutputInterface::VERBOSITY_VERBOSE) {
-                    $rows[] = ['WARNING', $requirement->getHelpText()];
-                }
-            } else {
-                if ($verbosity >= OutputInterface::VERBOSITY_NORMAL) {
-                    $rows[] = ['ERROR', $requirement->getHelpText()];
-                }
-            }
-        }
-
-        if (!empty($rows)) {
-            $table = new Table($output);
-            $table
-                ->setHeaders(['Check  ', $header])
-                ->setRows([]);
-            foreach ($rows as $row) {
-                $table->addRow($row);
-            }
-            $table->render();
-        }
     }
 
     /**
@@ -154,7 +118,7 @@ EOT
         } elseif (array_key_exists('oro/platform', $require)) {
             $version = $require['oro/platform'];
             if (preg_match('/4./', $version)) {
-                return new OroPlatform3CESystemRequirements($input->getOption('env'));
+                return new OroPlatform4CESystemRequirements($input->getOption('env'));
             } else {
                 if (preg_match('/3./', $version)) {
                     throw new RuntimeException('Not supported yet');
