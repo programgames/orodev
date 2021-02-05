@@ -73,6 +73,13 @@ EOT
                     $this->error($output, $e->getMessage());
                     return -1;
                 }
+            case 'open':
+                try {
+                    return $this->open($output, $input->getArgument('service'));
+                } catch (ParameterNotFoundException $e) {
+                    $this->error($output, $e->getMessage());
+                    return -1;
+                }
             default:
                 $this->error($output, 'Unknown mode');
                 return -1;
@@ -182,6 +189,20 @@ EOT
         return 0;
     }
 
+    protected function streamProcess(array $command, OutputInterface $output)
+    {
+        $process = new Process($command);
+        $process->run(function ($type, $buffer) use ($output){
+            if (Process::ERR === $type) {
+                echo $output->writeln('ERR => ' . $buffer);
+            } else {
+                echo $output->writeln('OUT => ' . $buffer);
+            }
+        });
+
+        return 0;
+    }
+
     /**
      * @param OutputInterface $output
      * @param string $service
@@ -196,6 +217,24 @@ EOT
         }
         $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.logs_command', $service)));
 
+        return $this->streamProcess($command, $output);
+    }
+    /**
+     * @param OutputInterface $output
+     * @param string $service
+     * @return int
+     * @throws ParameterNotFoundException
+     */
+    private function open(OutputInterface $output, string $service): int
+    {
+        if (!$this->checkServiceName($service)) {
+            $this->error($output, 'Unknown service');
+            return -1;
+        }
+        $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.open_command', $service)));
+        foreach ($command as $k => $v) {
+          $command[$k] = str_replace('\0', ' ', $v);
+        }
         return $this->runProcess($command, $output);
     }
 }

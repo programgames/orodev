@@ -9,6 +9,7 @@ parameters:
         mailcatcher:
             start_command: mailcatcher
             stop_command: curl -X "DELETE" http://localhost:1080/
+            open_command: open -a Google\0Chrome http://localhost:1080/
         rabbitmq:
             start_command: brew services start rabbitmq
             stop_command: brew services stop rabbitmq
@@ -16,6 +17,7 @@ parameters:
             version_command: rabbitmqctl version
             user: guest
             password: guest
+            open_command: open -a Google\0Chrome http://localhost:15672/
         elasticsearch:
             start_command: brew services start elasticsearch-full
             stop_command: brew services stop elasticsearch-full
@@ -27,3 +29,4 @@ parameters:
             stop_command: brew services stop kibana-ful
             restart_command: brew services restart kibana-full
             version_command: kibana --version
+            open_command: open -a Google\0Chrome http://localhost:5601/
