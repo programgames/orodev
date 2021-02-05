@@ -102,6 +102,7 @@ class PropertyAccessor implements PropertyAccessorInterface
      * @throws Exception\InvalidPropertyPathException If an object or a property path has invalid type.
      * @throws Exception\NoSuchPropertyException If a property does not exist or is not public.
      * @throws ReflectionException
+     * @noinspection PhpParameterNameChangedDuringInheritanceInspection
      */
     public function setValue(&$object, $propertyPath, $value)
     {
@@ -251,6 +252,7 @@ class PropertyAccessor implements PropertyAccessorInterface
      * @throws Exception\InvalidPropertyPathException If an object or a property path has invalid type.
      * @throws Exception\NoSuchPropertyException If a property does not exist or is not public.
      * @throws ReflectionException
+     * @noinspection PhpParameterNameChangedDuringInheritanceInspection
      */
     public function getValue($object, $propertyPath)
     {

@@ -10,6 +10,7 @@ class OroPlatform3SystemRequirements extends OroSystemRequirementCollection
     /**
      * OroPlatform3SystemRequirements constructor.
      * @param string $env
+     * @noinspection PhpUnusedParameterInspection
      */
     public function __construct($env = 'prod')
     {

@@ -34,7 +34,5 @@ class MailcatcherDaemonChecker implements DaemonCheckerInterface
         preg_match('/.*ruby.*/', $lsofOutput, $matches);
 
         throw new RuntimeException('Implementation not finished');
-
-        return 1025;
     }
 }

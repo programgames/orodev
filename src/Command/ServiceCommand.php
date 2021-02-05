@@ -66,8 +66,13 @@ EOT
                     $this->error($output, $e->getMessage());
                     return -1;
                 }
-            case  'logs':
-                return $this->displayLogs($output, $input->getArgument('service'));
+            case 'logs':
+                try {
+                    return $this->displayLogs($output, $input->getArgument('service'));
+                } catch (ParameterNotFoundException $e) {
+                    $this->error($output, $e->getMessage());
+                    return -1;
+                }
             default:
                 $this->error($output, 'Unknown mode');
                 return -1;

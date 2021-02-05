@@ -53,6 +53,7 @@ class OroRequirements extends SymfonyRequirements
      * @param string $requiredNodeJsVersion
      * @param string $env
      * @throws Exception
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function addOroRequirements(
         string $requiredPhpVersion,
@@ -62,6 +63,7 @@ class OroRequirements extends SymfonyRequirements
         $env = 'prod'
     ) {
         $phpVersion = phpversion();
+        $oldLevel = null;
 
         /**
          * We should hide the deprecation warnings for php >= 7.2 because SymfonyRequirements class uses
@@ -141,8 +143,10 @@ class OroRequirements extends SymfonyRequirements
         ];
 
         foreach ($localeCurrencies as $locale => $currencyCode) {
+            /** @noinspection PhpUndefinedClassInspection */
             $numberFormatter = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
 
+            /** @noinspection PhpUndefinedClassInspection */
             if ($currencyCode === $numberFormatter->getTextAttribute(\NumberFormatter::CURRENCY_CODE)) {
                 unset($localeCurrencies[$locale]);
             }
@@ -432,15 +436,16 @@ class OroRequirements extends SymfonyRequirements
             $val = (int)$matches[1];
         }
 
-        switch (strtolower($matches[2])) {
+        switch (strtolower('mb')) {
             case 'g':
             case 'gb':
-                $val *= 1024;
-            // no break
+                $val *= 1024*1024*1024;
+                break;
             case 'm':
+                break;
             case 'mb':
-                $val *= 1024;
-            // no break
+                $val *= 1024*1024;
+                break;
             case 'k':
             case 'kb':
                 $val *= 1024;

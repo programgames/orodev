@@ -43,7 +43,11 @@ class DbPrivilegesProvider
 
         try {
             // Drop temporary table
-            $pdo->exec('DROP TABLE oro_privileges_check');
+            $pdo->exec(
+                '-- noinspection SqlNoDataSourceInspection
+
+DROP TABLE oro_privileges_check'
+            );
             $granted[] = 'DROP';
         } catch (Exception $e) {
         }
@@ -66,6 +70,7 @@ class DbPrivilegesProvider
             $db = null;
             $hostStr = $grants[2][0] ?? '';
             if (strpos($hostStr, '.') !== false) {
+                /** @noinspection PhpUnusedLocalVariableInspection */
                 [$db, $host] = explode('.', $grants[2][0]);
             }
             $db = trim($db, '`');
