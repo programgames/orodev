@@ -436,7 +436,7 @@ class OroRequirements extends SymfonyRequirements
             $val = (int)$matches[1];
         }
 
-        switch (strtolower('mb')) {
+        switch (strtolower($matches[2])) {
             case 'g':
             case 'gb':
                 $val *= 1024*1024*1024;
@@ -520,7 +520,11 @@ class OroRequirements extends SymfonyRequirements
     {
         if ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql') {
             try {
-                $version = $pdo->query("SELECT extversion FROM pg_extension WHERE extname = 'uuid-ossp'")->fetchColumn(
+                $version = $pdo->query(
+                    "-- noinspection SqlNoDataSourceInspection
+
+SELECT extversion FROM pg_extension WHERE extname = 'uuid-ossp'"
+                )->fetchColumn(
                 );
 
                 return !empty($version);
