@@ -1,11 +1,12 @@
 parameters:
     service:
         postgres:
-            password: 
+            password:
             start_command: brew services start postgresql@9.6
             stop_command: brew services stop postgresql@9.6
             restart_command: brew services restart postgresql@9.6
             version_command: postgres --version
+            logs_command: tail -f /usr/local/var/log/postgresql@9.6.log
         mailcatcher:
             start_command: mailcatcher
             stop_command: curl -X "DELETE" http://localhost:1080/
@@ -13,11 +14,12 @@ parameters:
         rabbitmq:
             start_command: brew services start rabbitmq
             stop_command: brew services stop rabbitmq
-            restart_command: brew services restart  rabbitmq
+            restart_command: brew services restart rabbitmq
             version_command: rabbitmqctl version
             user: guest
             password: guest
             open_command: open -a Google\0Chrome http://localhost:15672/
+            logs_command: tail -f /usr/local/var/log/rabbitmq/std_error.log< & tail -f /usr/local/var/log/rabbitmq/std_out.log<
         elasticsearch:
             start_command: brew services start elasticsearch-full
             stop_command: brew services stop elasticsearch-full

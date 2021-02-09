@@ -31,9 +31,8 @@ trait ESRabbitCheckerTrait
             sprintf('Upgrade <strong>ElasticSearch</strong> to "%s" version.', $eSVersion)
         );
 
-        $elasticSearchDaemonChecker = new ElasticSearchDaemonChecker();
         $this->addSystemRequirement(
-            $elasticSearchDaemonChecker->isDaemonRunning(),
+            ElasticSearchDaemonChecker::isDaemonRunning(),
             sprintf('ElasticSearch daemon must be running'),
             sprintf('Run the ElasticSearch daemon')
         );
@@ -58,9 +57,8 @@ trait ESRabbitCheckerTrait
             )
         );
 
-        $rabbitMQDaemonChecker = new RabbitMqDaemonChecker();
         $this->addSystemRequirement(
-            $rabbitMQDaemonChecker->isDaemonRunning(),
+            RabbitMqDaemonChecker::isDaemonRunning(),
             sprintf('RabbitMQ daemon must be running'),
             sprintf('Run the RabbitMQ daemon')
         );

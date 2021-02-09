@@ -4,6 +4,7 @@
 require  __DIR__ . '/../vendor/autoload.php';
 
 use Programgames\OroDev\Command\CheckOroRequirementsCommand;
+use Programgames\OroDev\Command\CheckPortCommand;
 use Programgames\OroDev\Command\CheckSystemRequirementsCommand;
 use Programgames\OroDev\Command\ServiceCommand;
 use Symfony\Component\Console\Application;
@@ -17,6 +18,7 @@ $app->addCommands(
         new CheckOroRequirementsCommand(),
         new CheckSystemRequirementsCommand(),
         new ServiceCommand(),
+        new CheckPortCommand(),
     ]
 );
 

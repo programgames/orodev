@@ -120,7 +120,7 @@ EOT
             return -1;
         }
 
-        $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.start_command', $service)));
+        $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.stop_command', $service)));
         $processCode = $this->runProcess($command, $output);
 
         $output->writeln(sprintf('Service %s stopped  ...', $service));
@@ -142,7 +142,7 @@ EOT
             return -1;
         }
 
-        $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.start_command', $service)));
+        $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.restart_command', $service)));
 
         $processCode = $this->runProcess($command, $output);
 
@@ -189,10 +189,10 @@ EOT
         return 0;
     }
 
-    protected function streamProcess(array $command, OutputInterface $output)
+    protected function streamProcess(array $command, OutputInterface $output): int
     {
         $process = new Process($command);
-        $process->run(function ($type, $buffer) use ($output){
+        $process->run(function ($type, $buffer) use ($output) {
             if (Process::ERR === $type) {
                 echo $output->writeln('ERR => ' . $buffer);
             } else {
@@ -233,7 +233,7 @@ EOT
         }
         $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.open_command', $service)));
         foreach ($command as $k => $v) {
-          $command[$k] = str_replace('\0', ' ', $v);
+            $command[$k] = str_replace('\0', ' ', $v);
         }
         return $this->runProcess($command, $output);
     }

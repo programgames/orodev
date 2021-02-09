@@ -46,9 +46,8 @@ class OroSystemRequirementCollection extends RequirementCollection implements Po
             sprintf('Upgrade <strong>Psql</strong> to "%s" version.', $psqlVersion)
         );
 
-        $postgresDaemonChecker = new PostgresDaemonChecker();
         $this->addSystemRequirement(
-            $postgresDaemonChecker->isDaemonRunning(),
+            PostgresDaemonChecker::isDaemonRunning(),
             'Postgres Daemon must be running',
             'Run the postgres daemon'
         );
@@ -62,9 +61,8 @@ class OroSystemRequirementCollection extends RequirementCollection implements Po
             $mailcatcherExist ? 'Mailcatcher is installed' : 'Mailcatcher must be installed'
         );
 
-        $mailcatcherDaemonChecker = new MailcatcherDaemonChecker();
         $this->addSystemRequirement(
-            $mailcatcherDaemonChecker->isDaemonRunning(),
+            MailcatcherDaemonChecker::isDaemonRunning(),
             sprintf('Mailcatcher daemon must be running'),
             sprintf('Run the Mailcatcher daemon')
         );

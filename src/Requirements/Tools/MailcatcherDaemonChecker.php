@@ -5,9 +5,9 @@ namespace Programgames\OroDev\Requirements\Tools;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
-class MailcatcherDaemonChecker implements DaemonCheckerInterface
+class MailcatcherDaemonChecker implements DaemonCheckerInterface, WebInterfaceInterface
 {
-    public function isDaemonRunning(): bool
+    public static function isDaemonRunning(): bool
     {
         $process = new Process(['ps', 'aux']);
         $process->run();
@@ -21,7 +21,7 @@ class MailcatcherDaemonChecker implements DaemonCheckerInterface
         return true;
     }
 
-    public function getRunningPort(): int
+    public static function getRunningPort(): int
     {
         $process = new Process(['lsof', '-Pni4']);
         $process->run();
@@ -32,7 +32,40 @@ class MailcatcherDaemonChecker implements DaemonCheckerInterface
         }
         $lsofOutput = $process->getOutput();
         preg_match('/.*ruby.*/', $lsofOutput, $matches);
+        $pid = self::getPid();
 
-        throw new RuntimeException('Implementation not finished');
+        $lsofPort = null;
+        foreach ($matches as $match) {
+            if (preg_match('/.*' . $pid . '.*/', $match, $matchesPid)) {
+                $pieces = explode(' ', preg_replace('/\s+/', ' ', reset($matchesPid)));
+                $lsofPort = preg_replace('/.*:/', '', $pieces[8]);
+            }
+        }
+        if ($lsofPort === null) {
+            throw new RuntimeException("Mailcatcher port not found");
+        }
+        return $lsofPort;
+    }
+
+    public static function getPid(): int
+    {
+        $process = new Process(['ps', 'aux']);
+        $process->run();
+        if (!$process->isSuccessful()) {
+            throw new RuntimeException(
+                sprintf('Failed to check "%s" PID. %s, command not found', 'mailcatcher', $process->getErrorOutput())
+            );
+        }
+        $lsofOutput = $process->getOutput();
+        preg_match('/.*ruby.*mailcatcher.*/', $lsofOutput, $matches);
+        $mailcatcherProcess = preg_replace('/\s+/', ' ', reset($matches));
+        $pieces = explode(' ', $mailcatcherProcess);
+
+        return $pieces[1];
+    }
+
+    public static function getWebInterfacePort(): int
+    {
+        return 1080;
     }
 }

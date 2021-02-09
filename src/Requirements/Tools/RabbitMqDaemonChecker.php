@@ -5,11 +5,11 @@ namespace Programgames\OroDev\Requirements\Tools;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
-class RabbitMqDaemonChecker implements DaemonCheckerInterface
+class RabbitMqDaemonChecker implements DaemonCheckerInterface, WebInterfaceInterface
 {
-    public function isDaemonRunning(): bool
+    public static function isDaemonRunning(): bool
     {
-        $process = new Process(['rabbitmqctl','status']);
+        $process = new Process(['rabbitmqctl', 'status']);
         $process->run();
         if (!$process->isSuccessful()) {
             return false;
@@ -18,17 +18,63 @@ class RabbitMqDaemonChecker implements DaemonCheckerInterface
         return !preg_match('/.*error.*/', $postgresOutput, $matches);
     }
 
-    public function getRunningPort(): int
+    public static function getRunningPort(): int
     {
-        $process = new Process(['pg_isready']);
-        $process->run();
-        if (!$process->isSuccessful()) {
-            throw new RuntimeException(
-                sprintf('Failed to check "%s" daemon. %s, command not found', 'postgres', $process->getErrorOutput())
+        $baseConfig = parse_ini_file('/usr/local/etc/rabbitmq/rabbitmq-env.conf');
+        if (array_key_exists('CONFIG_FILE', $baseConfig)) {
+            //v3.7.0+
+            $rabbitConfig = parse_ini_file(
+                strtr(
+                    '%path%.%extension%',
+                    [
+                        '%path%' => $baseConfig['CONFIG_FILE'],
+                        '%extension%' => 'conf'
+                    ]
+                )
             );
+            if (array_key_exists('listeners.tcp.default', $rabbitConfig)) {
+                return $rabbitConfig['listeners.tcp.default'];
+            }
+        } elseif (array_key_exists('RABBITMQ_CONFIG_FILE', $baseConfig)) {
+            //TODO update
+            throw new RuntimeException('Not implemented yet');
+        } else {
+            throw new RuntimeException('RabbitMQ config file not found');
         }
-        $postgresOutput = $process->getOutput();
-        preg_match('/[0-9]+/', $postgresOutput, $version);
-        return $version[0];
+
+        return 5672;
+    }
+
+    public static function getPid(): int
+    {
+        //TODO implement
+        return 0;
+    }
+
+    public static function getWebInterfacePort(): int
+    {
+        $baseConfig = parse_ini_file('/usr/local/etc/rabbitmq/rabbitmq-env.conf');
+        if (array_key_exists('CONFIG_FILE', $baseConfig)) {
+            //v3.7.0+
+            $rabbitConfig = parse_ini_file(
+                strtr(
+                    '%path%.%extension%',
+                    [
+                        '%path%' => $baseConfig['CONFIG_FILE'],
+                        '%extension%' => 'conf'
+                    ]
+                )
+            );
+            if (array_key_exists('management.listener.port', $rabbitConfig)) {
+                return $rabbitConfig['management.listener.port'];
+            }
+        } elseif (array_key_exists('RABBITMQ_CONFIG_FILE', $baseConfig)) {
+            //TODO update
+            throw new RuntimeException('Not implemented yet');
+        } else {
+            throw new RuntimeException('RabbitMQ config file not found');
+        }
+
+        return 15672;
     }
 }
