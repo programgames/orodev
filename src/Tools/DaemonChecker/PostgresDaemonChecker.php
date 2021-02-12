@@ -1,13 +1,13 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools\DaemonChecker;
 
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
 class PostgresDaemonChecker implements DaemonCheckerInterface
 {
-    public static function isDaemonRunning(): bool
+    public function isDaemonRunning(): bool
     {
         $process = new Process(['pg_isready']);
         $process->run();
@@ -18,7 +18,7 @@ class PostgresDaemonChecker implements DaemonCheckerInterface
         return preg_match('/accepting connections/', $postgresOutput, $matches);
     }
 
-    public static function getRunningPort(): int
+    public function getRunningPort(): int
     {
         $process = new Process(['pg_isready']);
         $process->run();
@@ -32,7 +32,7 @@ class PostgresDaemonChecker implements DaemonCheckerInterface
         return $version[0];
     }
 
-    public static function getPid(): int
+    public function getPid(): int
     {
         //TODO implement
         return 0;

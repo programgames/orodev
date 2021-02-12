@@ -3,7 +3,7 @@
 namespace Programgames\OroDev\Requirements;
 
 use InvalidArgumentException;
-use Programgames\OroDev\Requirements\Tools\ArrayUtil;
+use Programgames\OroDev\Tools\ArrayUtil;
 use Symfony\Component\Config\Exception\FileLoaderImportCircularReferenceException;
 use Symfony\Component\Config\Exception\LoaderLoadException;
 use Symfony\Component\Config\Loader\FileLoader;

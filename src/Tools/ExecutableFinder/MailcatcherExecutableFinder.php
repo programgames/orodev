@@ -1,15 +1,14 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools\ExecutableFinder;
+
 
 use Symfony\Component\Process\ExecutableFinder;
 
-class PsqlExecutableFinder implements ExecutableFinderInterface
+class MailcatcherExecutableFinder implements ExecutableFinderInterface
 {
-    public const EXECUTABLE = "psql";
-    /**
-     * @return null|string
-     */
+    const EXECUTABLE = 'mailcatcher';
+
     public function findExecutable(): ?string
     {
         $executableFinder = new ExecutableFinder();

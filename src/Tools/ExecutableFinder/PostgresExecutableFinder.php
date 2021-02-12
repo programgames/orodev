@@ -1,13 +1,16 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools\ExecutableFinder;
+
 
 use Symfony\Component\Process\ExecutableFinder;
 
-class ElasticSearchExecutableFinder implements ExecutableFinderInterface
+class PostgresExecutableFinder implements ExecutableFinderInterface
 {
-    const EXECUTABLE = 'elasticsearch';
-
+    public const EXECUTABLE = "postgres";
+    /**
+     * @return null|string
+     */
     public function findExecutable(): ?string
     {
         $executableFinder = new ExecutableFinder();

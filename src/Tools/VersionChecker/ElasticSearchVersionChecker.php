@@ -1,6 +1,6 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools\VersionChecker;
 
 use Composer\Semver\Semver;
 use RuntimeException;
@@ -8,7 +8,7 @@ use Symfony\Component\Process\Process;
 
 class ElasticSearchVersionChecker implements SatisfyingInterface
 {
-    public static function satisfies(string $executable, string $constraints): bool
+    public function satisfies(string $executable, string $constraints): bool
     {
         $process = new Process([$executable, '--version']);
         $process->run();

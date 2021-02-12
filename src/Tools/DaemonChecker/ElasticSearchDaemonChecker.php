@@ -1,14 +1,15 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools\DaemonChecker;
 
+use Programgames\OroDev\Tools\BrewServiceParser;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 
 class ElasticSearchDaemonChecker implements DaemonCheckerInterface
 {
-    public static function isDaemonRunning(): bool
+    public function isDaemonRunning(): bool
     {
         $process = new Process(['brew', 'services', 'list']);
         $process->run();
@@ -20,7 +21,7 @@ class ElasticSearchDaemonChecker implements DaemonCheckerInterface
         return BrewServiceParser::isServiceRunning(reset($matches));
     }
 
-    public static function getRunningPort(): int
+    public function getRunningPort(): int
     {
         //TODO : rendre generique
         $config = Yaml::parse(file_get_contents('/usr/local/Cellar/elasticsearch-full/7.10.1/libexec/config/elasticsearch.yml'));
@@ -32,7 +33,7 @@ class ElasticSearchDaemonChecker implements DaemonCheckerInterface
         return 9200;
     }
 
-    public static function getPid(): int
+    public function getPid(): int
     {
         throw new RuntimeException('Not implemented');
     }

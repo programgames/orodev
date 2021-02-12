@@ -1,13 +1,16 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools\ExecutableFinder;
+
 
 use Symfony\Component\Process\ExecutableFinder;
 
-class RabbitMQExecutableFinder implements ExecutableFinderInterface
+class PsqlExecutableFinder implements ExecutableFinderInterface
 {
-    const EXECUTABLE = 'rabbitmq-server';
-
+    public const EXECUTABLE = "psql";
+    /**
+     * @return null|string
+     */
     public function findExecutable(): ?string
     {
         $executableFinder = new ExecutableFinder();

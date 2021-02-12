@@ -4,6 +4,7 @@ namespace Programgames\OroDev\Requirements\Application;
 
 use Exception;
 use Programgames\OroDev\Requirements\OroRequirement;
+use Programgames\OroDev\Tools\VersionChecker\NodeJsVersionChecker;
 use Symfony\Requirements\PhpConfigRequirement;
 
 /**
@@ -17,12 +18,14 @@ class OroPlatform4CEApplicationRequirements extends OroRequirements implements O
     const REQUIRED_NODEJS_VERSION = '>=12.0';
 
     /**
+     * @param NodeJsVersionChecker $nodeJsVersionChecker
      * @param string $env
      * @throws Exception
      */
-    public function __construct($env = 'prod')
+    public function __construct(NodeJsVersionChecker $nodeJsVersionChecker, $env = 'prod')
     {
         parent::__construct(
+            $nodeJsVersionChecker,
             self::REQUIRED_PHP_VERSION,
             self::REQUIRED_GD_VERSION,
             self::REQUIRED_CURL_VERSION,

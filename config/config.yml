@@ -2,6 +2,7 @@ parameters:
     service:
         postgres:
             password:
+            user: julien
             start_command: brew services start postgresql@9.6
             stop_command: brew services stop postgresql@9.6
             restart_command: brew services restart postgresql@9.6
@@ -20,15 +21,18 @@ parameters:
             password: guest
             open_command: open -a Google\0Chrome http://localhost:15672/
             logs_command: tail -f /usr/local/var/log/rabbitmq/std_error.log< & tail -f /usr/local/var/log/rabbitmq/std_out.log<
+            config_file: null
         elasticsearch:
             start_command: brew services start elasticsearch-full
             stop_command: brew services stop elasticsearch-full
             restart_command: brew services restart elasticsearch-full
             version_command: elasticsearch --version
             logs_command: tail -f /usr/local/var/log/elasticsearch.log
+            config_file: null
         kibana:
             start_command: brew services start kibana-ful
             stop_command: brew services stop kibana-ful
             restart_command: brew services restart kibana-full
             version_command: kibana --version
             open_command: open -a Google\0Chrome http://localhost:5601/
+            config_file: null

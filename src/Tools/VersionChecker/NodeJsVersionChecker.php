@@ -1,6 +1,6 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools\VersionChecker;
 
 use Composer\Semver\Semver;
 use RuntimeException;
@@ -13,7 +13,7 @@ class NodeJsVersionChecker implements SatisfyingInterface
      * @param string $constraints
      * @return bool
      */
-    public static function satisfies(string $executable, string $constraints): bool
+    public function satisfies(string $executable, string $constraints): bool
     {
         $process = new Process([$executable, '-v']);
         $process->run();

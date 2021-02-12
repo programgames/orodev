@@ -1,6 +1,7 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools\ExecutableFinder;
+
 
 use Symfony\Component\Process\ExecutableFinder;
 

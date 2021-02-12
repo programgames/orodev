@@ -1,13 +1,13 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools\DaemonChecker;
 
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
 class MailcatcherDaemonChecker implements DaemonCheckerInterface, WebInterfaceInterface
 {
-    public static function isDaemonRunning(): bool
+    public function isDaemonRunning(): bool
     {
         $process = new Process(['ps', 'aux']);
         $process->run();
@@ -21,7 +21,7 @@ class MailcatcherDaemonChecker implements DaemonCheckerInterface, WebInterfaceIn
         return true;
     }
 
-    public static function getRunningPort(): int
+    public function getRunningPort(): int
     {
         $process = new Process(['lsof', '-Pni4']);
         $process->run();
@@ -47,7 +47,7 @@ class MailcatcherDaemonChecker implements DaemonCheckerInterface, WebInterfaceIn
         return $lsofPort;
     }
 
-    public static function getPid(): int
+    public function getPid(): int
     {
         $process = new Process(['ps', 'aux']);
         $process->run();
@@ -64,7 +64,7 @@ class MailcatcherDaemonChecker implements DaemonCheckerInterface, WebInterfaceIn
         return $pieces[1];
     }
 
-    public static function getWebInterfacePort(): int
+    public function getWebInterfacePort(): int
     {
         return 1080;
     }

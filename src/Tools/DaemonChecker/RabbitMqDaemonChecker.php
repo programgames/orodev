@@ -1,13 +1,13 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools\DaemonChecker;
 
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
 class RabbitMqDaemonChecker implements DaemonCheckerInterface, WebInterfaceInterface
 {
-    public static function isDaemonRunning(): bool
+    public function isDaemonRunning(): bool
     {
         $process = new Process(['rabbitmqctl', 'status']);
         $process->run();
@@ -18,7 +18,7 @@ class RabbitMqDaemonChecker implements DaemonCheckerInterface, WebInterfaceInter
         return !preg_match('/.*error.*/', $postgresOutput, $matches);
     }
 
-    public static function getRunningPort(): int
+    public function getRunningPort(): int
     {
         $baseConfig = parse_ini_file('/usr/local/etc/rabbitmq/rabbitmq-env.conf');
         if (array_key_exists('CONFIG_FILE', $baseConfig)) {
@@ -45,13 +45,13 @@ class RabbitMqDaemonChecker implements DaemonCheckerInterface, WebInterfaceInter
         return 5672;
     }
 
-    public static function getPid(): int
+    public function getPid(): int
     {
         //TODO implement
         return 0;
     }
 
-    public static function getWebInterfacePort(): int
+    public function getWebInterfacePort(): int
     {
         $baseConfig = parse_ini_file('/usr/local/etc/rabbitmq/rabbitmq-env.conf');
         if (array_key_exists('CONFIG_FILE', $baseConfig)) {

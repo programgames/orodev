@@ -1,6 +1,6 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools;
 
 class LaunchCtlParser
 {

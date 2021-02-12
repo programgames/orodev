@@ -6,9 +6,9 @@ use Exception;
 use PDO;
 use Programgames\OroDev\Requirements\DbPrivilegesProvider;
 use Programgames\OroDev\Requirements\OroRequirement;
-use Programgames\OroDev\Requirements\Tools\NodeJsExecutableFinder;
-use Programgames\OroDev\Requirements\Tools\NodeJsVersionChecker;
 use Programgames\OroDev\Requirements\YamlFileLoader;
+use Programgames\OroDev\Tools\ExecutableFinder\NodeJsExecutableFinder;
+use Programgames\OroDev\Tools\VersionChecker\NodeJsVersionChecker;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Intl\Intl;
 use Symfony\Component\Process\Process;
@@ -19,8 +19,12 @@ class OroRequirements extends SymfonyRequirements
 {
     const EXCLUDE_REQUIREMENTS_MASK = '/5\.[0-6]|7\.0/';
 
+    /** @var NodeJsVersionChecker */
+    private $nodeJSVersionChecker;
+
     /**
      * OroRequirements constructor.
+     * @param NodeJsVersionChecker $nodeJSVersionChecker
      * @param string $requiredPhpVersion
      * @param string $requiredGdVersion
      * @param string $requiredCurlVersion
@@ -29,6 +33,7 @@ class OroRequirements extends SymfonyRequirements
      * @throws Exception
      */
     public function __construct(
+        NodeJsVersionChecker $nodeJSVersionChecker,
         string $requiredPhpVersion,
         string $requiredGdVersion,
         string $requiredCurlVersion,
@@ -36,6 +41,8 @@ class OroRequirements extends SymfonyRequirements
         $env = 'prod'
     ) {
         parent::__construct();
+
+        $this->nodeJSVersionChecker = $nodeJSVersionChecker;
 
         $this->addOroRequirements(
             $requiredPhpVersion,
@@ -254,7 +261,7 @@ class OroRequirements extends SymfonyRequirements
         );
 
         $this->addOroRequirement(
-            NodeJsVersionChecker::satisfies($nodeJsExecutable, $requiredNodeJsVersion),
+            $this->nodeJSVersionChecker->satisfies($nodeJsExecutable, $requiredNodeJsVersion),
             sprintf('NodeJS "%s" version must be installed.', $requiredNodeJsVersion),
             sprintf('Upgrade <strong>NodeJS</strong> to "%s" version.', $requiredNodeJsVersion)
         );

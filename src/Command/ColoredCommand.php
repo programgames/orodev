@@ -5,7 +5,7 @@ namespace Programgames\OroDev\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ColoredCommand extends Command
+abstract class ColoredCommand extends Command
 {
     protected function error(OutputInterface $output, string $message)
     {

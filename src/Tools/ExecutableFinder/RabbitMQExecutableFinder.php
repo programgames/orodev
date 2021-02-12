@@ -1,12 +1,13 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools\ExecutableFinder;
+
 
 use Symfony\Component\Process\ExecutableFinder;
 
-class MailcatcherExecutableFinder implements ExecutableFinderInterface
+class RabbitMQExecutableFinder implements ExecutableFinderInterface
 {
-    const EXECUTABLE = 'mailcatcher';
+    const EXECUTABLE = 'rabbitmq-server';
 
     public function findExecutable(): ?string
     {

@@ -1,0 +1,32 @@
+services:
+    _defaults:
+        autowire: true
+
+    Programgames\OroDev\Command\CheckOroRequirementsCommand: ~
+    Programgames\OroDev\Command\CheckPortCommand: ~
+    Programgames\OroDev\Command\CheckSystemRequirementsCommand: ~
+    Programgames\OroDev\Command\ConfigureProjectCommand: ~
+    Programgames\OroDev\Command\ServiceCommand: ~
+
+    Symfony\Component\Console\Application:
+        public: true
+
+    Programgames\OroDev\Tools\DaemonChecker\ElasticSearchDaemonChecker: ~
+    Programgames\OroDev\Tools\DaemonChecker\KibanaDaemonChecker: ~
+    Programgames\OroDev\Tools\DaemonChecker\MailcatcherDaemonChecker: ~
+    Programgames\OroDev\Tools\DaemonChecker\PostgresDaemonChecker: ~
+    Programgames\OroDev\Tools\DaemonChecker\RabbitMqDaemonChecker: ~
+
+    Programgames\OroDev\Tools\ExecutableFinder\ElasticSearchExecutableFinder: ~
+    Programgames\OroDev\Tools\ExecutableFinder\MailcatcherExecutableFinder: ~
+    Programgames\OroDev\Tools\ExecutableFinder\NodeJsExecutableFinder: ~
+    Programgames\OroDev\Tools\ExecutableFinder\PostgresExecutableFinder: ~
+    Programgames\OroDev\Tools\ExecutableFinder\PsqlExecutableFinder: ~
+    Programgames\OroDev\Tools\ExecutableFinder\RabbitMQExecutableFinder: ~
+
+
+    Programgames\OroDev\Tools\VersionChecker\ElasticSearchVersionChecker: ~
+    Programgames\OroDev\Tools\VersionChecker\NodeJsVersionChecker: ~
+    Programgames\OroDev\Tools\VersionChecker\PostgresVersionChecker: ~
+    Programgames\OroDev\Tools\VersionChecker\PsqlVersionChecker: ~
+    Programgames\OroDev\Tools\VersionChecker\RabbitMqVersionChecker: ~

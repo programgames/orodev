@@ -1,6 +1,6 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools;
 
 use ArrayAccess;
 use ReflectionClass;

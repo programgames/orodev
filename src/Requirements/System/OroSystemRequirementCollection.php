@@ -2,17 +2,66 @@
 
 namespace Programgames\OroDev\Requirements\System;
 
-use Programgames\OroDev\Requirements\Tools\MailcatcherDaemonChecker;
-use Programgames\OroDev\Requirements\Tools\MailcatcherExecutableFinder;
-use Programgames\OroDev\Requirements\Tools\PostgresDaemonChecker;
-use Programgames\OroDev\Requirements\Tools\PostgresExecutableFinder;
-use Programgames\OroDev\Requirements\Tools\PostgresVersionChecker;
-use Programgames\OroDev\Requirements\Tools\PsqlExecutableFinder;
-use Programgames\OroDev\Requirements\Tools\PsqlVersionChecker;
+use Programgames\OroDev\Tools\DaemonChecker\MailcatcherDaemonChecker;
+use Programgames\OroDev\Tools\DaemonChecker\PostgresDaemonChecker;
+use Programgames\OroDev\Tools\ExecutableFinder\MailcatcherExecutableFinder;
+use Programgames\OroDev\Tools\ExecutableFinder\PostgresExecutableFinder;
+use Programgames\OroDev\Tools\ExecutableFinder\PsqlExecutableFinder;
+use Programgames\OroDev\Tools\VersionChecker\PostgresVersionChecker;
+use Programgames\OroDev\Tools\VersionChecker\PsqlVersionChecker;
 use Symfony\Requirements\RequirementCollection;
 
 class OroSystemRequirementCollection extends RequirementCollection implements PostgresAndPSQLCheckerInterface
 {
+    /** @var MailcatcherDaemonChecker */
+    private $mailcatcherDaemonChecker;
+
+    /** @var PostgresDaemonChecker */
+    private $postgresDaemonChecker;
+
+    /** @var MailcatcherExecutableFinder */
+    private $mailcatcherExecutableFinder;
+
+    /** @var PostgresExecutableFinder */
+    private $postgresExecutableFinder;
+
+    /** @var PsqlExecutableFinder */
+    private $psqlExecutableFinder;
+
+    /** @var PostgresVersionChecker */
+    private $postgresVersionChecker;
+
+    /** @var PsqlVersionChecker */
+    private $psqlVersionChecker;
+
+    /**
+     * OroSystemRequirementCollection constructor.
+     * @param MailcatcherDaemonChecker $mailcatcherDaemonChecker
+     * @param PostgresDaemonChecker $postgresDaemonChecker
+     * @param MailcatcherExecutableFinder $mailcatcherExecutableFinder
+     * @param PostgresExecutableFinder $postgresExecutableFinder
+     * @param PsqlExecutableFinder $psqlExecutableFinder
+     * @param PostgresVersionChecker $postgresVersionChecker
+     * @param PsqlVersionChecker $psqlVersionChecker
+     */
+    public function __construct(
+        MailcatcherDaemonChecker $mailcatcherDaemonChecker,
+        PostgresDaemonChecker $postgresDaemonChecker,
+        MailcatcherExecutableFinder $mailcatcherExecutableFinder,
+        PostgresExecutableFinder $postgresExecutableFinder,
+        PsqlExecutableFinder $psqlExecutableFinder,
+        PostgresVersionChecker $postgresVersionChecker,
+        PsqlVersionChecker $psqlVersionChecker
+    ) {
+        $this->mailcatcherDaemonChecker = $mailcatcherDaemonChecker;
+        $this->postgresDaemonChecker = $postgresDaemonChecker;
+        $this->mailcatcherExecutableFinder = $mailcatcherExecutableFinder;
+        $this->postgresExecutableFinder = $postgresExecutableFinder;
+        $this->psqlExecutableFinder = $psqlExecutableFinder;
+        $this->postgresVersionChecker = $postgresVersionChecker;
+        $this->psqlVersionChecker = $psqlVersionChecker;
+    }
+
     public function checkPostgresAndPSQL(string $postgresVersion, string $psqlVersion)
     {
         $postgresFinder = new PostgresExecutableFinder();
@@ -39,21 +88,20 @@ class OroSystemRequirementCollection extends RequirementCollection implements Po
             $psqlExist ? 'Psql is installed' : 'Psql must be installed'
         );
 
-        $psqlVersionChecker = new PsqlVersionChecker();
+
         $this->addSystemRequirement(
-            $psqlVersionChecker->satisfies($psqlExecutable, $psqlVersion),
+            $this->psqlVersionChecker->satisfies($psqlExecutable, $psqlVersion),
             sprintf('Psql "%s" version must be installed.', $psqlVersion),
             sprintf('Upgrade <strong>Psql</strong> to "%s" version.', $psqlVersion)
         );
 
         $this->addSystemRequirement(
-            PostgresDaemonChecker::isDaemonRunning(),
+            $this->postgresDaemonChecker->isDaemonRunning(),
             'Postgres Daemon must be running',
             'Run the postgres daemon'
         );
 
-        $mailcatcherFinder = new MailcatcherExecutableFinder();
-        $mailcatcherExecutable = $mailcatcherFinder->findExecutable();
+        $mailcatcherExecutable = $this->mailcatcherExecutableFinder->findExecutable();
         $mailcatcherExist = null !== $mailcatcherExecutable;
         $this->addSystemRequirement(
             $mailcatcherExist,
@@ -62,7 +110,7 @@ class OroSystemRequirementCollection extends RequirementCollection implements Po
         );
 
         $this->addSystemRequirement(
-            MailcatcherDaemonChecker::isDaemonRunning(),
+            $this->mailcatcherDaemonChecker->isDaemonRunning(),
             sprintf('Mailcatcher daemon must be running'),
             sprintf('Run the Mailcatcher daemon')
         );

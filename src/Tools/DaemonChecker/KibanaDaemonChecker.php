@@ -1,13 +1,14 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools\DaemonChecker;
 
+use Programgames\OroDev\Tools\BrewServiceParser;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 
 class KibanaDaemonChecker implements DaemonCheckerInterface
 {
-    public static function isDaemonRunning(): bool
+    public function isDaemonRunning(): bool
     {
         $process = new Process(['brew', 'services', 'list']);
         $process->run();
@@ -19,7 +20,7 @@ class KibanaDaemonChecker implements DaemonCheckerInterface
         return BrewServiceParser::isServiceRunning(reset($matches));
     }
 
-    public static function getRunningPort(): int
+    public function getRunningPort(): int
     {
         //TODO : rendre generique
         $config = Yaml::parse(file_get_contents('/usr/local/etc/kibana/kibana.yml'));
@@ -31,7 +32,7 @@ class KibanaDaemonChecker implements DaemonCheckerInterface
         return 5601;
     }
 
-    public static function getPid(): int
+    public function getPid(): int
     {
         //TODO implement
         return 0;

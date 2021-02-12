@@ -1,6 +1,6 @@
 <?php
 
-namespace Programgames\OroDev\Requirements\Tools;
+namespace Programgames\OroDev\Tools;
 
 use ReflectionException;
 use Symfony\Component\PropertyAccess\PropertyPathInterface;

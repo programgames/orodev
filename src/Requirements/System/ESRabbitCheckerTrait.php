@@ -2,19 +2,25 @@
 
 namespace Programgames\OroDev\Requirements\System;
 
-use Programgames\OroDev\Requirements\Tools\ElasticSearchDaemonChecker;
-use Programgames\OroDev\Requirements\Tools\ElasticSearchExecutableFinder;
-use Programgames\OroDev\Requirements\Tools\ElasticSearchVersionChecker;
-use Programgames\OroDev\Requirements\Tools\RabbitMqDaemonChecker;
-use Programgames\OroDev\Requirements\Tools\RabbitMQExecutableFinder;
-use Programgames\OroDev\Requirements\Tools\RabbitMqVersionChecker;
+use Programgames\OroDev\Tools\DaemonChecker\ElasticSearchDaemonChecker;
+use Programgames\OroDev\Tools\DaemonChecker\RabbitMqDaemonChecker;
+use Programgames\OroDev\Tools\ExecutableFinder\ElasticSearchExecutableFinder;
+use Programgames\OroDev\Tools\ExecutableFinder\RabbitMQExecutableFinder;
+use Programgames\OroDev\Tools\VersionChecker\ElasticSearchVersionChecker;
+use Programgames\OroDev\Tools\VersionChecker\RabbitMqVersionChecker;
 
 trait ESRabbitCheckerTrait
 {
     abstract public function addSystemRequirement(bool $elasticSearchExist, string $sprintf, string $param);
 
-    public function checkEsRabbitMq(string $eSVersion, string $rabbitMqVersion)
-    {
+    public function checkEsRabbitMq(
+        ElasticSearchDaemonChecker $elasticSearchDaemonChecker,
+        RabbitMqDaemonChecker $rabbitMqDaemonChecker,
+        RabbitMQExecutableFinder $rabbitMQExecutableFinder,
+        RabbitMqVersionChecker $rabbitMqVersionChecker,
+        string $eSVersion,
+        string $rabbitMqVersion
+    ) {
         $elasticSearchFinder = new ELasticSearchExecutableFinder();
         $elasticSearchExecutable = $elasticSearchFinder->findExecutable();
         $elasticSearchExist = null !== $elasticSearchExecutable;
@@ -32,13 +38,12 @@ trait ESRabbitCheckerTrait
         );
 
         $this->addSystemRequirement(
-            ElasticSearchDaemonChecker::isDaemonRunning(),
+            $elasticSearchDaemonChecker->isDaemonRunning(),
             sprintf('ElasticSearch daemon must be running'),
             sprintf('Run the ElasticSearch daemon')
         );
 
 
-        $rabbitMQExecutableFinder = new RabbitMQExecutableFinder();
         $rabbitMQExecutable = $rabbitMQExecutableFinder->findExecutable();
         $rabbitMQExist = null !== $rabbitMQExecutable;
         $this->addSystemRequirement(
@@ -47,9 +52,8 @@ trait ESRabbitCheckerTrait
             $rabbitMQExist ? 'RabbitMQ is installed' : 'RabbitMQ must be installed'
         );
 
-        $rabbitMQVersionChecker = new RabbitMqVersionChecker();
         $this->addSystemRequirement(
-            $rabbitMQVersionChecker->satisfies('rabbitmqctl', $rabbitMqVersion),
+            $rabbitMqVersionChecker->satisfies('rabbitmqctl', $rabbitMqVersion),
             sprintf('RabbitMQ "%s" version must be installed', $rabbitMqVersion),
             sprintf(
                 'Upgrade <strong>RabbitMQ</strong> to "%s" version. ! => check that RabbitMQ daemon is running first',
@@ -58,7 +62,7 @@ trait ESRabbitCheckerTrait
         );
 
         $this->addSystemRequirement(
-            RabbitMqDaemonChecker::isDaemonRunning(),
+            $rabbitMqDaemonChecker->isDaemonRunning(),
             sprintf('RabbitMQ daemon must be running'),
             sprintf('Run the RabbitMQ daemon')
         );
