@@ -55,6 +55,8 @@ class OroDevConfig implements ConfigurationInterface
                                 ->scalarNode('version_command')->end()
                                 ->scalarNode('logs_command')->end()
                                 ->scalarNode('config_file')->end()
+                                ->scalarNode('user')->end()
+                                ->scalarNode('password')->end()
                             ->end()
                         ->end()
                         ->arrayNode('kibana')

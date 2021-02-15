@@ -2,7 +2,6 @@
 
 namespace Programgames\OroDev\Tools\ExecutableFinder;
 
-
 use Symfony\Component\Process\ExecutableFinder;
 
 class ElasticSearchExecutableFinder implements ExecutableFinderInterface

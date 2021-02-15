@@ -2,10 +2,14 @@
 
 namespace Programgames\OroDev\Command;
 
+use MCStreetguy\ComposerParser\ComposerJson;
 use Programgames\OroDev\Config\ConfigHelper;
 use Programgames\OroDev\Exception\ParameterNotFoundException;
 use Programgames\OroDev\Postgres\PostgresHelper;
+use Programgames\OroDev\Tools\DaemonChecker\ElasticSearchDaemonChecker;
 use Programgames\OroDev\Tools\DaemonChecker\PostgresDaemonChecker;
+use Programgames\OroDev\Tools\DaemonChecker\RabbitMqDaemonChecker;
+use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -19,15 +23,27 @@ class ConfigureProjectCommand extends ColoredCommand
     /** @var PostgresDaemonChecker */
     private $postgresDaemonChecker;
 
+    /** @var ElasticSearchDaemonChecker */
+    private $elasticSearchDaemonChecker;
+
+    /** @var RabbitMqDaemonChecker */
+    private $rabbitMQDaemonChecker;
+
     /**
      * ConfigureProjectCommand constructor.
      * @param PostgresDaemonChecker $postgresDaemonChecker
+     * @param ElasticSearchDaemonChecker $elasticSearchDaemonChecker
+     * @param RabbitMqDaemonChecker $rabbitMQDaemonChecker
      */
-    public function __construct(PostgresDaemonChecker $postgresDaemonChecker)
-    {
+    public function __construct(
+        PostgresDaemonChecker $postgresDaemonChecker,
+        ElasticSearchDaemonChecker $elasticSearchDaemonChecker,
+        RabbitMqDaemonChecker $rabbitMQDaemonChecker
+    ) {
         parent::__construct();
-
         $this->postgresDaemonChecker = $postgresDaemonChecker;
+        $this->elasticSearchDaemonChecker = $elasticSearchDaemonChecker;
+        $this->rabbitMQDaemonChecker = $rabbitMQDaemonChecker;
     }
 
     protected function configure()
@@ -54,7 +70,8 @@ EOT
         $config = $this->configureDatabaseConfig($input, $output, $config);
         $config = $this->configureMailConfig($config);
         $config = $this->configureWebsocketConfig($config);
-        $config = $this->configureSearchEngineConfig($input, $output, $config);
+        $config = $this->configureSearchEngineConfig($config);
+        $config = $this->configureRabbitMQ($config);
         $yaml = Yaml::dump($config);
 
         file_put_contents('config/parameters.yml', $yaml);
@@ -88,7 +105,7 @@ EOT
                     if ($userInput === null || empty($userInput)) {
                         return null;
                     }
-                    if (preg_match('/.*'. $userInput . '.*\b/', $database)) {
+                    if (preg_match('/.*' . $userInput . '.*\b/', $database)) {
                         return $database;
                     }
                     return null;
@@ -119,7 +136,7 @@ EOT
 
         return $config;
     }
-    
+
     private function configureWebsocketConfig(array $config): array
     {
         $config['parameters']['websocket_bind_address'] = '0.0.0.0';
@@ -136,24 +153,86 @@ EOT
         return $config;
     }
 
-    private function configureSearchEngineConfig(InputInterface $input, OutputInterface $output, array $config): array
+    /**
+     * @param array $config
+     * @return array
+     * @throws ParameterNotFoundException
+     */
+    private function configureSearchEngineConfig(array $config): array
     {
+        $config['parameters']['search_engine_ssl_verification'] = null;
+        $config['parameters']['search_engine_ssl_cert'] = null;
+        $config['parameters']['search_engine_ssl_cert_password'] = null;
+        $config['parameters']['search_engine_ssl_key'] = null;
+        $config['parameters']['search_engine_ssl_key_password'] = null;
+        $config['parameters']['website_search_engine_index_prefix'] = sprintf(
+            'oro_website_%s_search',
+            $this->getCurrentDirectory()
+        );
+        $config['parameters']['search_engine_index_prefix'] = sprintf(
+            'oro_%s_search',
+            $this->getCurrentDirectory()
+        );
 
-        /*
-         *     search_engine_name: orm
-    search_engine_host: localhost
-    search_engine_port: null
-    search_engine_index_prefix: oro_search
-    search_engine_username: elastic
-    search_engine_password: changeme
-    search_engine_ssl_verification: null
-    search_engine_ssl_cert: null
-    search_engine_ssl_cert_password: null
-    search_engine_ssl_key: null
-    search_engine_ssl_key_password: null
-    website_search_engine_index_prefix: oro_website_search
-         */
+        if (!$this->isEnterprise()) {
+            $config['parameters']['search_engine_name'] = 'orm';
+            $config['parameters']['search_engine_host'] = 'localhost';
+            $config['parameters']['search_engine_port'] = null;
 
+        } else {
+            $config['parameters']['search_engine_name'] = 'elasticsearch';
+            $config['parameters']['search_engine_host'] = 'localhost';
+            $config['parameters']['search_engine_port'] = $this->elasticSearchDaemonChecker->getRunningPort();
+            $config['parameters']['search_engine_username'] = ConfigHelper::getParameter('service.elasticsearch.user');
+            $config['parameters']['search_engine_password'] = ConfigHelper::getParameter(
+                'service.elasticsearch.password'
+            );
+        }
+        return $config;
+    }
+
+    private function isEnterprise(): bool
+    {
+        $content = json_decode(file_get_contents(getcwd() . '/composer.json'), true);
+        if ($content === null) {
+            throw new RuntimeException('composer.json not found');
+        }
+        $composerJson = new ComposerJson($content);
+
+        $require = $composerJson->getRequire()->getData();
+        if (array_key_exists('oro/commerce-enterprise', $require)) {
+            return true;
+        }
+        return false;
+    }
+
+    private function getCurrentDirectory()
+    {
+        $path = getcwd();
+        $position = strrpos($path, '/') + 1;
+        return substr($path, $position);
+    }
+
+    /**
+     * @param array $config
+     * @return array
+     * @throws ParameterNotFoundException
+     */
+    private function configureRabbitMQ(array $config): array
+    {
+        if (!$this->isEnterprise()) {
+            $config['parameters']['message_queue_transport'] =  'dbal';
+            $config['parameters']['message_queue_transport_config'] = [];
+        } else {
+            $config['parameters']['message_queue_transport'] = 'amqp';
+            $config['parameters']['message_queue_transport_config'] = [
+                'host' => 'localhost',
+                'port' => $this->rabbitMQDaemonChecker->getRunningPort(),
+                'user' => ConfigHelper::getParameter('service.rabbitmq.user'),
+                'password' => ConfigHelper::getParameter('service.rabbitmq.password'),
+                'vhost' => '/'
+            ];
+        }
         return $config;
     }
 }
