@@ -6,5 +6,5 @@ cd orodev
 
 composer install
 
-export PATH="$(pwd)/orodev/bin:$PATH"
+export PATH="$(pwd)/bin:$PATH"
 
