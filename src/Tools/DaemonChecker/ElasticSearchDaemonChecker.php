@@ -3,12 +3,25 @@
 namespace Programgames\OroDev\Tools\DaemonChecker;
 
 use Programgames\OroDev\Tools\BrewServiceParser;
+use Programgames\OroDev\Tools\VersionChecker\ElasticSearchVersionChecker;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 
 class ElasticSearchDaemonChecker implements DaemonCheckerInterface
 {
+    /** @var ElasticSearchVersionChecker */
+    private $elasticSearchVersionChecker;
+
+    /**
+     * ElasticSearchDaemonChecker constructor.
+     * @param ElasticSearchVersionChecker $elasticSearchVersionChecker
+     */
+    public function __construct(ElasticSearchVersionChecker $elasticSearchVersionChecker)
+    {
+        $this->elasticSearchVersionChecker = $elasticSearchVersionChecker;
+    }
+
     public function isDaemonRunning(): bool
     {
         $process = new Process(['brew', 'services', 'list']);
@@ -23,11 +36,17 @@ class ElasticSearchDaemonChecker implements DaemonCheckerInterface
 
     public function getRunningPort(): int
     {
-        //TODO : rendre generique
-        $config = Yaml::parse(file_get_contents('/usr/local/Cellar/elasticsearch-full/7.10.1/libexec/config/elasticsearch.yml'));
+        $version = $this->elasticSearchVersionChecker->getVersion();
 
-        if (array_key_exists('http:port', $config)) {
-            return $config['http:port'];
+        $config = Yaml::parse(file_get_contents(
+            sprintf(
+                '/usr/local/Cellar/elasticsearch-full/%s/libexec/config/elasticsearch.yml',
+                $version
+            )
+        ));
+
+        if (array_key_exists('http.port', $config)) {
+            return $config['http.port'];
         }
 
         return 9200;
@@ -35,6 +54,16 @@ class ElasticSearchDaemonChecker implements DaemonCheckerInterface
 
     public function getPid(): int
     {
-        throw new RuntimeException('Not implemented');
+        $process = new Process(['ps', 'aux']);
+        $process->run();
+        if (!$process->isSuccessful()) {
+            throw new RuntimeException(
+                sprintf('Failed to use "%s" program. %s, command not found', 'ps | aux', $process->getErrorOutput())
+            );
+        }
+
+        preg_match('/.*java.*elastic.*/', $process->getOutput(), $matches);
+
+        return (int)$matches[0];
     }
 }

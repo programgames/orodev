@@ -7,6 +7,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class OroDevConfig implements ConfigurationInterface
 {
+    /** @noinspection NullPointerExceptionInspection */
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('orodev');

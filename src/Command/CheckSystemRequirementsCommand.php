@@ -15,6 +15,7 @@ use Programgames\OroDev\Tools\ExecutableFinder\MailcatcherExecutableFinder;
 use Programgames\OroDev\Tools\ExecutableFinder\PostgresExecutableFinder;
 use Programgames\OroDev\Tools\ExecutableFinder\PsqlExecutableFinder;
 use Programgames\OroDev\Tools\ExecutableFinder\RabbitMQExecutableFinder;
+use Programgames\OroDev\Tools\VersionChecker\ElasticSearchVersionChecker;
 use Programgames\OroDev\Tools\VersionChecker\PostgresVersionChecker;
 use Programgames\OroDev\Tools\VersionChecker\PsqlVersionChecker;
 use Programgames\OroDev\Tools\VersionChecker\RabbitMqVersionChecker;
@@ -30,6 +31,8 @@ class CheckSystemRequirementsCommand extends Command
     public static $defaultName = 'check:system';
     /** @var ElasticSearchDaemonChecker */
     private $elasticSearchDaemonChecker;
+    /** @var ElasticSearchVersionChecker */
+    private $elasticSearchVersionChecker;
     /** @var MailcatcherExecutableFinder */
     private $mailCatcherExecutableFinder;
     /** @var MailcatcherDaemonChecker */
@@ -54,6 +57,7 @@ class CheckSystemRequirementsCommand extends Command
     /**
      * CheckSystemRequirementsCommand constructor.
      * @param ElasticSearchDaemonChecker $elasticSearchDaemonChecker
+     * @param ElasticSearchVersionChecker $elasticSearchVersionChecker
      * @param MailcatcherExecutableFinder $mailCatcherExecutableFinder
      * @param MailcatcherDaemonChecker $mailcatcherDaemonChecker
      * @param PostgresDaemonChecker $postgresDaemonChecker
@@ -67,6 +71,7 @@ class CheckSystemRequirementsCommand extends Command
      */
     public function __construct(
         ElasticSearchDaemonChecker $elasticSearchDaemonChecker,
+        ElasticSearchVersionChecker $elasticSearchVersionChecker,
         MailcatcherExecutableFinder $mailCatcherExecutableFinder,
         MailcatcherDaemonChecker $mailcatcherDaemonChecker,
         PostgresDaemonChecker $postgresDaemonChecker,
@@ -81,6 +86,7 @@ class CheckSystemRequirementsCommand extends Command
         parent::__construct();
 
         $this->elasticSearchDaemonChecker = $elasticSearchDaemonChecker;
+        $this->elasticSearchVersionChecker = $elasticSearchVersionChecker;
         $this->mailCatcherExecutableFinder = $mailCatcherExecutableFinder;
         $this->mailcatcherDaemonChecker = $mailcatcherDaemonChecker;
         $this->postgresDaemonChecker = $postgresDaemonChecker;
@@ -95,7 +101,7 @@ class CheckSystemRequirementsCommand extends Command
 
     use RenderTableTrait;
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setDescription('Checks that the system meets the requirements.')
@@ -170,30 +176,34 @@ EOT
                     $this->postgresVersionChecker,
                     $this->psqlVersionChecker,
                     $this->elasticSearchDaemonChecker,
+                    $this->elasticSearchVersionChecker,
                     $this->rabbitMqDaemonChecker,
                     $this->rabbitMQExecutableFinder,
                     $this->rabbitMQVersionChecker
                 );
-            } else {
-                if (preg_match('/3./', $version)) {
-                    return new OroCommerce3EESystemRequirements(
-                        $this->mailCatcherExecutableFinder,
-                        $this->mailcatcherDaemonChecker,
-                        $this->postgresDaemonChecker,
-                        $this->postgresExecutableFinder,
-                        $this->psqlExecutableFinder,
-                        $this->postgresVersionChecker,
-                        $this->psqlVersionChecker,
-                        $this->elasticSearchDaemonChecker,
-                        $this->rabbitMqDaemonChecker,
-                        $this->rabbitMQExecutableFinder,
-                        $this->rabbitMQVersionChecker
-                    );
-                } else {
-                    throw new RuntimeException('Application version not supported');
-                }
             }
-        } elseif (array_key_exists('oro/commerce', $require)) {
+
+            if (preg_match('/3./', $version)) {
+                return new OroCommerce3EESystemRequirements(
+                    $this->mailCatcherExecutableFinder,
+                    $this->mailcatcherDaemonChecker,
+                    $this->postgresDaemonChecker,
+                    $this->postgresExecutableFinder,
+                    $this->psqlExecutableFinder,
+                    $this->postgresVersionChecker,
+                    $this->psqlVersionChecker,
+                    $this->elasticSearchDaemonChecker,
+                    $this->elasticSearchVersionChecker,
+                    $this->rabbitMqDaemonChecker,
+                    $this->rabbitMQExecutableFinder,
+                    $this->rabbitMQVersionChecker
+                );
+            }
+
+            throw new RuntimeException('Application version not supported');
+        }
+
+        if (array_key_exists('oro/commerce', $require)) {
             $version = $require['oro/commerce'];
             if (preg_match('/4./', $version)) {
                 return new OroPlatform4CESystemRequirements(
@@ -205,14 +215,14 @@ EOT
                     $this->postgresVersionChecker,
                     $this->psqlVersionChecker
                 );
-            } else {
-                if (preg_match('/3./', $version)) {
-                    throw new RuntimeException('Not supported yet');
-                } else {
-                    throw new RuntimeException('Application version not supported');
-                }
             }
-        } elseif (array_key_exists('oro/platform', $require)) {
+            if (preg_match('/3./', $version)) {
+                throw new RuntimeException('Not supported yet');
+            }
+            throw new RuntimeException('Application version not supported');
+        }
+
+        if (array_key_exists('oro/platform', $require)) {
             $version = $require['oro/platform'];
             if (preg_match('/4./', $version)) {
                 return new OroPlatform4CESystemRequirements(
@@ -224,13 +234,12 @@ EOT
                     $this->postgresVersionChecker,
                     $this->psqlVersionChecker
                 );
-            } else {
-                if (preg_match('/3./', $version)) {
-                    throw new RuntimeException('Not supported yet');
-                } else {
-                    throw new RuntimeException('Application version not supported');
-                }
             }
+
+            if (preg_match('/3./', $version)) {
+                throw new RuntimeException('Not supported yet');
+            }
+            throw new RuntimeException('Application version not supported');
         }
         throw new RuntimeException('Application not supported');
     }

@@ -15,12 +15,14 @@ trait ESRabbitCheckerTrait
 
     public function checkEsRabbitMq(
         ElasticSearchDaemonChecker $elasticSearchDaemonChecker,
+        ElasticSearchVersionChecker $elasticSearchVersionChecker,
         RabbitMqDaemonChecker $rabbitMqDaemonChecker,
         RabbitMQExecutableFinder $rabbitMQExecutableFinder,
         RabbitMqVersionChecker $rabbitMqVersionChecker,
         string $eSVersion,
         string $rabbitMqVersion
-    ) {
+    ):void
+    {
         $elasticSearchFinder = new ELasticSearchExecutableFinder();
         $elasticSearchExecutable = $elasticSearchFinder->findExecutable();
         $elasticSearchExist = null !== $elasticSearchExecutable;
@@ -30,7 +32,6 @@ trait ESRabbitCheckerTrait
             $elasticSearchExist ? 'ElasticSearch is installed' : 'ElasticSearch must be installed'
         );
 
-        $elasticSearchVersionChecker = new ElasticSearchVersionChecker();
         $this->addSystemRequirement(
             $elasticSearchVersionChecker->satisfies($elasticSearchExecutable, $eSVersion),
             sprintf('ElasticSearch "%s" version must be installed.', $eSVersion),

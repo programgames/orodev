@@ -15,7 +15,7 @@ class ConfigHelper
      * @return mixed
      * @throws ParameterNotFoundException
      */
-    public static function getParameter($parameter)
+    public function getParameter($parameter)
     {
         $directory = __DIR__ . '/../../config/config.yml';
 
@@ -29,7 +29,7 @@ class ConfigHelper
             $config
         );
 
-        $configContainer =  self::normalizeConfig($processedConfiguration);
+        $configContainer =  $this->normalizeConfig($processedConfiguration);
 
         if (!array_key_exists($parameter, $configContainer)) {
             throw new ParameterNotFoundException($parameter);
@@ -38,7 +38,7 @@ class ConfigHelper
         return $configContainer[$parameter];
     }
 
-    public static function normalizeConfig(array $config): array
+    private function normalizeConfig(array $config): array
     {
         $iterator = new RecursiveIteratorIterator(new RecursiveArrayIterator($config), RecursiveIteratorIterator::SELF_FIRST);
         $paths = [];

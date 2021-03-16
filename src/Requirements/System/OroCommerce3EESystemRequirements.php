@@ -10,14 +10,15 @@ use Programgames\OroDev\Tools\ExecutableFinder\MailcatcherExecutableFinder;
 use Programgames\OroDev\Tools\ExecutableFinder\PostgresExecutableFinder;
 use Programgames\OroDev\Tools\ExecutableFinder\PsqlExecutableFinder;
 use Programgames\OroDev\Tools\ExecutableFinder\RabbitMQExecutableFinder;
+use Programgames\OroDev\Tools\VersionChecker\ElasticSearchVersionChecker;
 use Programgames\OroDev\Tools\VersionChecker\PostgresVersionChecker;
 use Programgames\OroDev\Tools\VersionChecker\PsqlVersionChecker;
 use Programgames\OroDev\Tools\VersionChecker\RabbitMqVersionChecker;
 
 class OroCommerce3EESystemRequirements extends OroCommerce3CESystemRequirements implements ESAndRabbitCheckerInterface
 {
-    const ELASTIC_SEARCH_VERSION = "6.*";
-    const RABBIT_MQ_VERSION = ">=3.6";
+    public const ELASTIC_SEARCH_VERSION = "6.*";
+    public const RABBIT_MQ_VERSION = ">=3.6";
 
     use ESRabbitCheckerTrait;
 
@@ -40,6 +41,7 @@ class OroCommerce3EESystemRequirements extends OroCommerce3CESystemRequirements 
      * @param PostgresVersionChecker $postgresVersionChecker
      * @param PsqlVersionChecker $psqlVersionChecker
      * @param ElasticSearchDaemonChecker $elasticSearchDaemonChecker
+     * @param ElasticSearchVersionChecker $elasticSearchVersionChecker
      * @param RabbitMqDaemonChecker $rabbitMqDaemonChecker
      * @param RabbitMQExecutableFinder $rabbitMQExecutableFinder
      * @param RabbitMqVersionChecker $rabbitMqVersionChecker
@@ -53,6 +55,7 @@ class OroCommerce3EESystemRequirements extends OroCommerce3CESystemRequirements 
         PostgresVersionChecker $postgresVersionChecker,
         PsqlVersionChecker $psqlVersionChecker,
         ElasticSearchDaemonChecker $elasticSearchDaemonChecker,
+        ElasticSearchVersionChecker $elasticSearchVersionChecker,
         RabbitMqDaemonChecker $rabbitMqDaemonChecker,
         RabbitMQExecutableFinder $rabbitMQExecutableFinder,
         RabbitMqVersionChecker $rabbitMqVersionChecker
@@ -69,6 +72,7 @@ class OroCommerce3EESystemRequirements extends OroCommerce3CESystemRequirements 
 
         $this->checkEsRabbitMq(
             $elasticSearchDaemonChecker,
+            $elasticSearchVersionChecker,
             $rabbitMqDaemonChecker,
             $rabbitMQExecutableFinder,
             $rabbitMqVersionChecker,

@@ -54,7 +54,7 @@ class CheckPortCommand extends ColoredCommand
         $this->rabbitMqDaemonChecker = $rabbitMqDaemonChecker;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setDescription('Checks application ports')
@@ -68,10 +68,11 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->info($output, 'test' . $this->elasticSearchDaemonChecker->getPid());
         $this->info($output, 'Mailcatcher Port : ' . $this->mailcatcherDaemonChecker->getRunningPort());
         $this->info($output, 'Mailcatcher interface Port : ' . $this->mailcatcherDaemonChecker->getWebInterfacePort());
         $this->info($output, 'ElasticSearch Port : ' . $this->elasticSearchDaemonChecker->getRunningPort());
-        $this->info($output, 'Kibana Port : ' .$this->kibanaDaemonChecker->getRunningPort());
+        $this->info($output, 'Kibana Port : ' . $this->kibanaDaemonChecker->getRunningPort());
         $this->info($output, 'Postgres Port : ' . $this->postgresDaemonChecker->getRunningPort());
         $this->info($output, 'RabbitMQ Port : ' . $this->rabbitMqDaemonChecker->getRunningPort());
         $this->info($output, 'RabbitMQ interface Port : ' . $this->rabbitMqDaemonChecker->getWebInterfacePort());

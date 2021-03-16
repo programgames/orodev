@@ -28,19 +28,19 @@ use Traversable;
  */
 class PropertyAccessor implements PropertyAccessorInterface
 {
-    const VALUE = 0;
-    const IS_REF = 1;
-    const ACCESS_HAS_PROPERTY = 0;
-    const ACCESS_TYPE = 1;
-    const ACCESS_NAME = 2;
-    const ACCESS_REF = 3;
-    const ACCESS_ADDER = 4;
-    const ACCESS_REMOVER = 5;
-    const ACCESS_TYPE_METHOD = 0;
-    const ACCESS_TYPE_PROPERTY = 1;
-    const ACCESS_TYPE_MAGIC = 2;
-    const ACCESS_TYPE_ADDER_AND_REMOVER = 3;
-    const ACCESS_TYPE_NOT_FOUND = 4;
+    public const VALUE = 0;
+    public const IS_REF = 1;
+    public const ACCESS_HAS_PROPERTY = 0;
+    public const ACCESS_TYPE = 1;
+    public const ACCESS_NAME = 2;
+    public const ACCESS_REF = 3;
+    public const ACCESS_ADDER = 4;
+    public const ACCESS_REMOVER = 5;
+    public const ACCESS_TYPE_METHOD = 0;
+    public const ACCESS_TYPE_PROPERTY = 1;
+    public const ACCESS_TYPE_MAGIC = 2;
+    public const ACCESS_TYPE_ADDER_AND_REMOVER = 3;
+    public const ACCESS_TYPE_NOT_FOUND = 4;
 
     /** @var bool */
     protected $magicCall;
@@ -104,7 +104,7 @@ class PropertyAccessor implements PropertyAccessorInterface
      * @throws ReflectionException
      * @noinspection PhpParameterNameChangedDuringInheritanceInspection
      */
-    public function setValue(&$object, $propertyPath, $value)
+    public function setValue(&$object, $propertyPath, $value): void
     {
         $propertyPath = $this->getPropertyPath($propertyPath);
 
@@ -171,7 +171,7 @@ class PropertyAccessor implements PropertyAccessorInterface
      * @throws Exception\NoSuchPropertyException If a property does not exist or is not public.
      * @throws ReflectionException
      */
-    public function remove(&$object, $propertyPath)
+    public function remove(&$object, $propertyPath): void
     {
         $propertyPath = $this->getPropertyPath($propertyPath);
 
@@ -487,14 +487,14 @@ class PropertyAccessor implements PropertyAccessorInterface
                             $propertyPath->getElements()[$propertyPathIndex]
                         )
                     );
-                } else {
-                    throw new Exception\NoSuchPropertyException(
-                        sprintf(
-                            'Unexpected object type. Expected "array or object", "%s" given.',
-                            is_object($object) ? get_class($object) : gettype($object)
-                        )
-                    );
                 }
+
+                throw new Exception\NoSuchPropertyException(
+                    sprintf(
+                        'Unexpected object type. Expected "array or object", "%s" given.',
+                        is_object($object) ? get_class($object) : gettype($object)
+                    )
+                );
             }
         }
 
@@ -518,7 +518,7 @@ class PropertyAccessor implements PropertyAccessorInterface
      *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    protected function writeValue(&$object, $property, $value)
+    protected function writeValue(&$object, $property, $value): void
     {
         if ($object instanceof ArrayAccess || is_array($object)) {
             $object[$property] = $value;
@@ -618,7 +618,7 @@ class PropertyAccessor implements PropertyAccessorInterface
             $shouldRemoveItems = false;
         }
 
-        if (is_array($value) || $value instanceof Traversable) {
+        if (is_iterable($value)) {
             $this->writeCollection($object, $property, $value, $addMethod, $removeMethod, $shouldRemoveItems);
 
             return true;
@@ -646,7 +646,7 @@ class PropertyAccessor implements PropertyAccessorInterface
         string $addMethod,
         string $removeMethod,
         $shouldRemoveItems = true
-    ) {
+    ): void {
         // At this point the add and remove methods have been found
         // Use iterator_to_array() instead of clone in order to prevent side effects
         // see https://github.com/symfony/symfony/issues/4670
@@ -655,7 +655,7 @@ class PropertyAccessor implements PropertyAccessorInterface
         $propertyValue = $this->readValue($object, $property, false);
         $previousValue = $propertyValue[self::VALUE];
 
-        if (is_array($previousValue)
+        if (is_iterable($previousValue)
             || $previousValue instanceof Traversable) {
             foreach ($previousValue as $previousItem) {
                 foreach ($collection as $key => $item) {
@@ -718,7 +718,7 @@ class PropertyAccessor implements PropertyAccessorInterface
      *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    protected function unsetProperty(&$object, $property)
+    protected function unsetProperty(&$object, $property): void
     {
         if ($object instanceof ArrayAccess) {
             if (isset($object[$property])) {
@@ -944,7 +944,7 @@ class PropertyAccessor implements PropertyAccessorInterface
 
             $singulars = (array)$inflector->singularize($camelized);
 
-            if (is_array($value) || $value instanceof Traversable) {
+            if (is_iterable($value) || $value instanceof Traversable) {
                 $methods = $this->findAdderAndRemover($reflClass, $singulars);
 
                 if (null !== $methods) {
@@ -984,7 +984,8 @@ class PropertyAccessor implements PropertyAccessorInterface
                         'Neither the property "%s" nor one of the methods %s"%s()", "%s()", '.
                         '"__set()" or "__call()" exist and have public access in class "%s".',
                         $property,
-                        implode('', array_map(function ($singular) {
+                        implode('', array_map(
+                            static function ($singular) {
                             return '"add'.$singular.'()"/"remove'.$singular.'()", ';
                         }, $singulars)),
                         $setter,

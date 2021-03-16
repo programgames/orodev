@@ -12,10 +12,10 @@ use Symfony\Requirements\PhpConfigRequirement;
  */
 class OroPlatform4CEApplicationRequirements extends OroRequirements implements OroApplicationRequirementsInterface
 {
-    const REQUIRED_PHP_VERSION = '7.3.13';
-    const REQUIRED_GD_VERSION = '2.0';
-    const REQUIRED_CURL_VERSION = '7.0';
-    const REQUIRED_NODEJS_VERSION = '>=12.0';
+    public const REQUIRED_PHP_VERSION = '7.3.13';
+    public const REQUIRED_GD_VERSION = '2.0';
+    public const REQUIRED_CURL_VERSION = '7.0';
+    public const REQUIRED_NODEJS_VERSION = '>=12.0';
 
     /**
      * @param NodeJsVersionChecker $nodeJsVersionChecker
@@ -34,47 +34,35 @@ class OroPlatform4CEApplicationRequirements extends OroRequirements implements O
         );
     }
 
-    /**
-     * Get the list of mandatory requirements (all requirements excluding PhpIniRequirement)
-     *
-     * @return array
-     */
+    /** @noinspection SenselessMethodDuplicationInspection */
     public function getMandatoryRequirements(): array
     {
         return array_filter(
             $this->getRequirements(),
-            function ($requirement) {
+            static function ($requirement) {
                 return !($requirement instanceof PhpConfigRequirement)
                     && !($requirement instanceof OroRequirement);
             }
         );
     }
 
-    /**
-     * Get the list of PHP ini requirements
-     *
-     * @return array
-     */
+    /** @noinspection SenselessMethodDuplicationInspection */
     public function getPhpConfigRequirements(): array
     {
         return array_filter(
             $this->getRequirements(),
-            function ($requirement) {
+            static function ($requirement) {
                 return $requirement instanceof PhpConfigRequirement;
             }
         );
     }
 
-    /**
-     * Get the list of Oro specific requirements
-     *
-     * @return array
-     */
+    /** @noinspection SenselessMethodDuplicationInspection */
     public function getOroRequirements(): array
     {
         return array_filter(
             $this->getRequirements(),
-            function ($requirement) {
+            static function ($requirement) {
                 return $requirement instanceof OroRequirement;
             }
         );

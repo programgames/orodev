@@ -37,7 +37,7 @@ class CheckOroRequirementsCommand extends ColoredCommand
         $this->nodeJsVersionChecker = $nodeJsVersionChecker;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setDescription('Checks that the application meets the system requirements.')
@@ -101,6 +101,7 @@ EOT
      *
      * @return OroApplicationRequirementsInterface
      * @throws Exception
+     * @noinspection RedundantElseClauseInspection
      */
     protected function getOroRequirements(InputInterface $input)
     {
@@ -115,34 +116,28 @@ EOT
             $version = $require['oro/commerce-enterprise'];
             if (preg_match('/4./', $version)) {
                 return new OroPlatform4EEApplicationRequirements($this->nodeJsVersionChecker, $input->getOption('env'));
+            } elseif (preg_match('/3./', $version)) {
+                return new OroCommerce3EEApplicationRequirements($this->nodeJsVersionChecker, $input->getOption('env'));
             } else {
-                if (preg_match('/3./', $version)) {
-                    return new OroCommerce3EEApplicationRequirements($this->nodeJsVersionChecker, $input->getOption('env'));
-                } else {
-                    throw new RuntimeException('Application version not supported');
-                }
+                throw new RuntimeException('Application version not supported');
             }
         } elseif (array_key_exists('oro/commerce', $require)) {
             $version = $require['oro/commerce'];
             if (preg_match('/4./', $version)) {
                 return new OroPlatform4CEApplicationRequirements($this->nodeJsVersionChecker, $input->getOption('env'));
+            } elseif (preg_match('/3./', $version)) {
+                return new OroCommerce3CEApplicationRequirements($this->nodeJsVersionChecker, $input->getOption('env'));
             } else {
-                if (preg_match('/3./', $version)) {
-                    return new OroCommerce3CEApplicationRequirements($this->nodeJsVersionChecker, $input->getOption('env'));
-                } else {
-                    throw new RuntimeException('Application version not supported');
-                }
+                throw new RuntimeException('Application version not supported');
             }
         } elseif (array_key_exists('oro/platform', $require)) {
             $version = $require['oro/platform'];
             if (preg_match('/4./', $version)) {
                 return new OroPlatform4CEApplicationRequirements($this->nodeJsVersionChecker, $input->getOption('env'));
+            } elseif (preg_match('/3./', $version)) {
+                return new OroPlatform3CEApplicationRequirements($this->nodeJsVersionChecker, $input->getOption('env'));
             } else {
-                if (preg_match('/3./', $version)) {
-                    return new OroPlatform3CEApplicationRequirements($this->nodeJsVersionChecker, $input->getOption('env'));
-                } else {
-                    throw new RuntimeException('Application version not supported');
-                }
+                throw new RuntimeException('Application version not supported');
             }
         }
         throw new RuntimeException('Application not supported');

@@ -7,6 +7,9 @@ services:
     Programgames\OroDev\Command\CheckSystemRequirementsCommand: ~
     Programgames\OroDev\Command\ConfigureProjectCommand: ~
     Programgames\OroDev\Command\ServiceCommand: ~
+    Programgames\OroDev\Command\SwitchEnvironmentCommand: ~
+    Programgames\OroDev\Command\KillPhpCommand: ~
+    Programgames\OroDev\Command\InstallCommand: ~
 
     Symfony\Component\Console\Application:
         public: true
@@ -30,3 +33,8 @@ services:
     Programgames\OroDev\Tools\VersionChecker\PostgresVersionChecker: ~
     Programgames\OroDev\Tools\VersionChecker\PsqlVersionChecker: ~
     Programgames\OroDev\Tools\VersionChecker\RabbitMqVersionChecker: ~
+
+
+    Programgames\OroDev\Config\ConfigHelper:
+
+    Programgames\OroDev\Postgres\PostgresHelper: ~

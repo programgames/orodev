@@ -33,11 +33,7 @@ class YamlFileLoader extends FileLoader
         $content['parameters'] = ArrayUtil::arrayMergeRecursiveDistinct($content['parameters'], $importedParameters);
 
         // parameters
-        if (isset($content['parameters'])) {
-            return $content['parameters'];
-        }
-
-        return array();
+        return $content['parameters'] ?? array();
     }
 
     /**

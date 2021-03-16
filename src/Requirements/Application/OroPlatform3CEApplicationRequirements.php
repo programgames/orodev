@@ -10,12 +10,12 @@ use Programgames\OroDev\Tools\VersionChecker\NodeJsVersionChecker;
  */
 class OroPlatform3CEApplicationRequirements extends OroRequirements implements OroApplicationRequirementsInterface
 {
-    const REQUIRED_PHP_VERSION = '7.1.26';
-    const REQUIRED_GD_VERSION = '2.0';
-    const REQUIRED_CURL_VERSION = '7.0';
-    const REQUIRED_NODEJS_VERSION = '>=6.6';
+    public const REQUIRED_PHP_VERSION = '7.1.26';
+    public const REQUIRED_GD_VERSION = '2.0';
+    public const REQUIRED_CURL_VERSION = '7.0';
+    public const REQUIRED_NODEJS_VERSION = '>=6.6';
 
-    const EXCLUDE_REQUIREMENTS_MASK = '/5\.[0-6]|7\.0/';
+    public const EXCLUDE_REQUIREMENTS_MASK = '/5\.[0-6]|7\.0/';
 
     /**
      * @param NodeJsVersionChecker $nodeJsVersionChecker

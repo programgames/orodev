@@ -62,7 +62,7 @@ class OroSystemRequirementCollection extends RequirementCollection implements Po
         $this->psqlVersionChecker = $psqlVersionChecker;
     }
 
-    public function checkPostgresAndPSQL(string $postgresVersion, string $psqlVersion)
+    public function checkPostgresAndPSQL(string $postgresVersion, string $psqlVersion): void
     {
         $postgresFinder = new PostgresExecutableFinder();
         $postgresExecutable = $postgresFinder->findExecutable();
@@ -124,7 +124,7 @@ class OroSystemRequirementCollection extends RequirementCollection implements Po
      * @param string $helpHtml The help text formatted in HTML for resolving the problem
      * @param string|null $helpText The help text (when null, it will be inferred from $helpHtml, i.e. stripped from HTML tags)
      */
-    public function addSystemRequirement(bool $fulfilled, string $testMessage, string $helpHtml, $helpText = null)
+    public function addSystemRequirement(bool $fulfilled, string $testMessage, string $helpHtml, $helpText = null):void
     {
         $this->add(new OroSystemRequirement($fulfilled, $testMessage, $helpHtml, $helpText, false));
     }

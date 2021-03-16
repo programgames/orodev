@@ -17,7 +17,7 @@ class RabbitMqVersionChecker implements SatisfyingInterface
         }
         $output = $process->getOutput();
         preg_match(
-            '/.*(RabbitMQ version: ).*([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?/',
+            '/.*(RabbitMQ version: ).*(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?/',
             $output,
             $matches
         );

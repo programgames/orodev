@@ -31,6 +31,7 @@
     "ext-json": "*",
     "friendsofphp/php-cs-fixer": "^2.18",
     "symfony/http-kernel": "^5.2",
-    "symfony/dependency-injection": "^5.2"
+    "symfony/dependency-injection": "^5.2",
+    "mikey179/vfsstream": "^1.6"
   }
 }

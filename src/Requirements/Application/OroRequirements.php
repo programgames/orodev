@@ -3,6 +3,7 @@
 namespace Programgames\OroDev\Requirements\Application;
 
 use Exception;
+use NumberFormatter;
 use PDO;
 use Programgames\OroDev\Requirements\DbPrivilegesProvider;
 use Programgames\OroDev\Requirements\OroRequirement;
@@ -17,7 +18,7 @@ use Symfony\Requirements\SymfonyRequirements;
 
 class OroRequirements extends SymfonyRequirements
 {
-    const EXCLUDE_REQUIREMENTS_MASK = '/5\.[0-6]|7\.0/';
+    public const EXCLUDE_REQUIREMENTS_MASK = '/5\.[0-6]|7\.0/';
 
     /** @var NodeJsVersionChecker */
     private $nodeJSVersionChecker;
@@ -60,7 +61,6 @@ class OroRequirements extends SymfonyRequirements
      * @param string $requiredNodeJsVersion
      * @param string $env
      * @throws Exception
-     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function addOroRequirements(
         string $requiredPhpVersion,
@@ -68,8 +68,9 @@ class OroRequirements extends SymfonyRequirements
         string $requiredCurlVersion,
         string $requiredNodeJsVersion,
         $env = 'prod'
-    ) {
-        $phpVersion = phpversion();
+    ):void
+    {
+        $phpVersion = PHP_VERSION;
         $oldLevel = null;
 
         /**
@@ -151,10 +152,10 @@ class OroRequirements extends SymfonyRequirements
 
         foreach ($localeCurrencies as $locale => $currencyCode) {
             /** @noinspection PhpUndefinedClassInspection */
-            $numberFormatter = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
+            $numberFormatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
 
             /** @noinspection PhpUndefinedClassInspection */
-            if ($currencyCode === $numberFormatter->getTextAttribute(\NumberFormatter::CURRENCY_CODE)) {
+            if ($currencyCode === $numberFormatter->getTextAttribute(NumberFormatter::CURRENCY_CODE)) {
                 unset($localeCurrencies[$locale]);
             }
         }
@@ -245,7 +246,7 @@ class OroRequirements extends SymfonyRequirements
         $this->addPhpConfigRequirement(
             'memory_limit',
             function () use ($mem) {
-                return $mem >= 512 * 1024 * 1024 || -1 == $mem;
+                return $mem >= 512 * 1024 * 1024 || -1 === $mem;
             },
             false,
             'memory_limit should be at least 512M',
@@ -376,7 +377,7 @@ class OroRequirements extends SymfonyRequirements
      * @param string $helpHtml The help text formatted in HTML for resolving the problem
      * @param string|null $helpText The help text (when null, it will be inferred from $helpHtml, i.e. stripped from HTML tags)
      */
-    public function addOroRequirement(bool $fulfilled, string $testMessage, string $helpHtml, $helpText = null)
+    public function addOroRequirement(bool $fulfilled, string $testMessage, string $helpHtml, $helpText = null):void
     {
         $this->add(new OroRequirement($fulfilled, $testMessage, $helpHtml, $helpText, false));
     }
@@ -390,7 +391,7 @@ class OroRequirements extends SymfonyRequirements
     {
         return array_filter(
             $this->getRequirements(),
-            function ($requirement) {
+            static function ($requirement) {
                 return !($requirement instanceof PhpConfigRequirement)
                     && !($requirement instanceof OroRequirement);
             }
@@ -406,7 +407,7 @@ class OroRequirements extends SymfonyRequirements
     {
         return array_filter(
             $this->getRequirements(),
-            function ($requirement) {
+            static function ($requirement) {
                 return $requirement instanceof PhpConfigRequirement;
             }
         );
@@ -421,7 +422,7 @@ class OroRequirements extends SymfonyRequirements
     {
         return array_filter(
             $this->getRequirements(),
-            function ($requirement) {
+            static function ($requirement) {
                 return $requirement instanceof OroRequirement;
             }
         );
@@ -440,6 +441,7 @@ class OroRequirements extends SymfonyRequirements
         preg_match('/([\-0-9]+)[\s]*([a-z]*)$/i', trim($val), $matches);
 
         if (isset($matches[1])) {
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $val = (int)$matches[1];
         }
 
@@ -575,6 +577,7 @@ SELECT extversion FROM pg_extension WHERE extname = 'uuid-ossp'"
     /**
      * @param array $config
      * @return bool|null|PDO
+     * @noinspection DuplicatedCode
      */
     protected function getDatabaseConnection(array $config)
     {

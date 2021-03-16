@@ -13,7 +13,20 @@ class ServiceCommand extends ColoredCommand
 {
     public static $defaultName = 'service';
 
-    protected function configure()
+    /** @var ConfigHelper */
+    private $configHelper;
+
+    /**
+     * ServiceCommand constructor.
+     * @param ConfigHelper $configHelper
+     */
+    public function __construct(ConfigHelper $configHelper)
+    {
+        parent::__construct();
+        $this->configHelper = $configHelper;
+    }
+
+    protected function configure(): void
     {
         $this
             ->setDescription('Start service.')
@@ -99,7 +112,7 @@ EOT
             $this->error($output, 'Unknown service');
             return -1;
         }
-        $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.start_command', $service)));
+        $command = explode(" ", $this->configHelper->getParameter(sprintf('service.%s.start_command', $service)));
         $processCode = $this->runProcess($command, $output);
         $output->writeln(sprintf('Service %s started  ...', $service));
 
@@ -120,7 +133,7 @@ EOT
             return -1;
         }
 
-        $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.stop_command', $service)));
+        $command = explode(" ", $this->configHelper->getParameter(sprintf('service.%s.stop_command', $service)));
         $processCode = $this->runProcess($command, $output);
 
         $output->writeln(sprintf('Service %s stopped  ...', $service));
@@ -142,7 +155,7 @@ EOT
             return -1;
         }
 
-        $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.restart_command', $service)));
+        $command = explode(" ", $this->configHelper->getParameter(sprintf('service.%s.restart_command', $service)));
 
         $processCode = $this->runProcess($command, $output);
 
@@ -163,7 +176,7 @@ EOT
             $this->error($output, 'Unknown service');
             return -1;
         }
-        $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.version_command', $service)));
+        $command = explode(" ", $this->configHelper->getParameter(sprintf('service.%s.version_command', $service)));
         return $this->runProcess($command, $output);
     }
 
@@ -215,7 +228,7 @@ EOT
             $this->error($output, 'Unknown service');
             return -1;
         }
-        $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.logs_command', $service)));
+        $command = explode(" ", $this->configHelper->getParameter(sprintf('service.%s.logs_command', $service)));
 
         return $this->streamProcess($command, $output);
     }
@@ -231,7 +244,7 @@ EOT
             $this->error($output, 'Unknown service');
             return -1;
         }
-        $command = explode(" ", ConfigHelper::getParameter(sprintf('service.%s.open_command', $service)));
+        $command = explode(" ", $this->configHelper->getParameter(sprintf('service.%s.open_command', $service)));
         foreach ($command as $k => $v) {
             $command[$k] = str_replace('\0', ' ', $v);
         }

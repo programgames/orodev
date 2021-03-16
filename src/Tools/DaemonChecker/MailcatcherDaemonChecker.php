@@ -2,6 +2,7 @@
 
 namespace Programgames\OroDev\Tools\DaemonChecker;
 
+use Programgames\OroDev\Exception\DaemonNotRunning;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
@@ -32,7 +33,7 @@ class MailcatcherDaemonChecker implements DaemonCheckerInterface, WebInterfaceIn
         }
         $lsofOutput = $process->getOutput();
         preg_match('/.*ruby.*/', $lsofOutput, $matches);
-        $pid = self::getPid();
+        $pid = $this->getPid();
 
         $lsofPort = null;
         foreach ($matches as $match) {
@@ -59,6 +60,11 @@ class MailcatcherDaemonChecker implements DaemonCheckerInterface, WebInterfaceIn
         $lsofOutput = $process->getOutput();
         preg_match('/.*ruby.*mailcatcher.*/', $lsofOutput, $matches);
         $mailcatcherProcess = preg_replace('/\s+/', ' ', reset($matches));
+
+        if (empty($mailcatcherProcess)) {
+            throw new DaemonNotRunning('Mailcatcher is not running');
+        }
+
         $pieces = explode(' ', $mailcatcherProcess);
 
         return $pieces[1];

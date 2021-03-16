@@ -68,7 +68,8 @@ class ArrayUtil
         $reverse = false,
         $propertyPath = 'priority',
         $sortingFlags = SORT_NUMERIC
-    ) {
+    ):void
+    {
         if (empty($array)) {
             return;
         }
@@ -112,9 +113,9 @@ class ArrayUtil
 
         if ($stringComparison) {
             return strcmp($a, $b);
-        } else {
-            return $a < $b ? -1 : 1;
         }
+
+        return $a < $b ? -1 : 1;
     }
 
     /**
@@ -153,7 +154,7 @@ class ArrayUtil
                     ? $value[$propertyPath]
                     : null;
             } elseif ($isCallback) {
-                $val = call_user_func($propertyPath, $value);
+                $val = $propertyPath($value);
             } else {
                 $val = $propertyAccessor->getValue($value, $propertyPath);
             }
@@ -191,7 +192,7 @@ class ArrayUtil
     {
         uasort(
             $sortable,
-            function ($a, $b) use ($stringComparison, $reverse) {
+             static function ($a, $b) use ($stringComparison, $reverse) {
                 $result = self::compare($a[0], $b[0], $stringComparison);
                 if (0 === $result) {
                     $result = self::compare($a[1], $b[1]);
@@ -213,9 +214,9 @@ class ArrayUtil
      *
      * @return callable
      */
-    public static function createOrderedComparator(array $order)
+    public static function createOrderedComparator(array $order): callable
     {
-        return function ($a, $b) use ($order) {
+        return static function ($a, $b) use ($order) {
             if (!array_key_exists($b, $order)) {
                 return -1;
             }
@@ -239,7 +240,7 @@ class ArrayUtil
     public static function some(callable $callback, array $array): bool
     {
         foreach ($array as $item) {
-            if (call_user_func($callback, $item)) {
+            if ($callback($item)) {
                 return true;
             }
         }
@@ -258,7 +259,7 @@ class ArrayUtil
     public static function find(callable $callback, array $array)
     {
         foreach ($array as $item) {
-            if (call_user_func($callback, $item)) {
+            if ($callback($item)) {
                 return $item;
             }
         }
@@ -277,7 +278,7 @@ class ArrayUtil
     public static function dropWhile(callable $callback, array $array): array
     {
         foreach ($array as $key => $value) {
-            if (!call_user_func($callback, $value)) {
+            if (!$callback($value)) {
                 return array_slice($array, $key);
             }
         }
@@ -299,22 +300,18 @@ class ArrayUtil
     public static function arrayMergeRecursiveDistinct(array $first, array $second): array
     {
         foreach ($second as $idx => $value) {
-            if (is_integer($idx)) {
+            if (is_int($idx)) {
                 $first[] = $value;
-            } else {
-                if (!array_key_exists($idx, $first)) {
-                    $first[$idx] = $value;
+            } elseif (!array_key_exists($idx, $first)) {
+                $first[$idx] = $value;
+            } elseif (is_array($value)) {
+                if (is_array($first[$idx])) {
+                    $first[$idx] = self::arrayMergeRecursiveDistinct($first[$idx], $value);
                 } else {
-                    if (is_array($value)) {
-                        if (is_array($first[$idx])) {
-                            $first[$idx] = self::arrayMergeRecursiveDistinct($first[$idx], $value);
-                        } else {
-                            $first[$idx] = $value;
-                        }
-                    } else {
-                        $first[$idx] = $value;
-                    }
+                    $first[$idx] = $value;
                 }
+            } else {
+                $first[$idx] = $value;
             }
         }
 
@@ -406,7 +403,7 @@ class ArrayUtil
         $propertyPath = implode(
             '',
             array_map(
-                function ($part) {
+                static function ($part) {
                     return sprintf('[%s]', $part);
                 },
                 $path

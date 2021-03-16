@@ -4,9 +4,11 @@ namespace Programgames\OroDev\Command;
 
 use MCStreetguy\ComposerParser\ComposerJson;
 use Programgames\OroDev\Config\ConfigHelper;
+use Programgames\OroDev\Exception\DatabaseAlreadyExist;
 use Programgames\OroDev\Exception\ParameterNotFoundException;
 use Programgames\OroDev\Postgres\PostgresHelper;
 use Programgames\OroDev\Tools\DaemonChecker\ElasticSearchDaemonChecker;
+use Programgames\OroDev\Tools\DaemonChecker\MailcatcherDaemonChecker;
 use Programgames\OroDev\Tools\DaemonChecker\PostgresDaemonChecker;
 use Programgames\OroDev\Tools\DaemonChecker\RabbitMqDaemonChecker;
 use RuntimeException;
@@ -20,6 +22,9 @@ class ConfigureProjectCommand extends ColoredCommand
 {
     public static $defaultName = 'configure';
 
+    /** @var MailcatcherDaemonChecker */
+    private $mailcatcherDaemonChecker;
+
     /** @var PostgresDaemonChecker */
     private $postgresDaemonChecker;
 
@@ -29,24 +34,40 @@ class ConfigureProjectCommand extends ColoredCommand
     /** @var RabbitMqDaemonChecker */
     private $rabbitMQDaemonChecker;
 
+    /** @var ConfigHelper */
+    private $configHelper;
+
+    /** @var PostgresHelper */
+    private $postgresHelper;
+
     /**
      * ConfigureProjectCommand constructor.
+     * @param MailcatcherDaemonChecker $mailcatcherDaemonChecker
      * @param PostgresDaemonChecker $postgresDaemonChecker
      * @param ElasticSearchDaemonChecker $elasticSearchDaemonChecker
      * @param RabbitMqDaemonChecker $rabbitMQDaemonChecker
+     * @param ConfigHelper $configHelper
+     * @param PostgresHelper $postgresHelper
      */
     public function __construct(
+        MailcatcherDaemonChecker $mailcatcherDaemonChecker,
         PostgresDaemonChecker $postgresDaemonChecker,
         ElasticSearchDaemonChecker $elasticSearchDaemonChecker,
-        RabbitMqDaemonChecker $rabbitMQDaemonChecker
+        RabbitMqDaemonChecker $rabbitMQDaemonChecker,
+        ConfigHelper $configHelper,
+        PostgresHelper $postgresHelper
     ) {
         parent::__construct();
+
+        $this->mailcatcherDaemonChecker = $mailcatcherDaemonChecker;
         $this->postgresDaemonChecker = $postgresDaemonChecker;
         $this->elasticSearchDaemonChecker = $elasticSearchDaemonChecker;
         $this->rabbitMQDaemonChecker = $rabbitMQDaemonChecker;
+        $this->configHelper = $configHelper;
+        $this->postgresHelper = $postgresHelper;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setDescription('Configure parameters.yml')
@@ -94,14 +115,14 @@ EOT
 
         $this->info($output, 'Available databases');
 
-        $databases = PostgresHelper::getDatabases();
+        $databases = $this->postgresHelper->getDatabases();
         foreach ($databases as $database) {
             $this->info($output, $database);
         }
         $callback = function (string $userInput) use ($databases): array {
             return array_filter(
                 $databases,
-                function ($database) use ($userInput) {
+                static function ($database) use ($userInput) {
                     if ($userInput === null || empty($userInput)) {
                         return null;
                     }
@@ -117,9 +138,17 @@ EOT
         $question = new Question('Please enter the name of the database : ', 'postgres');
         $question->setAutocompleterCallback($callback);
         $database = $helper->ask($input, $output, $question);
+        if ($database === 'Create a new database') {
+            $questionName = new Question('New database name : ');
+            $database = $helper->ask($input, $output, $questionName);
+            if (in_array($database, $databases, true)) {
+                throw new DatabaseAlreadyExist(sprintf('The database %s already exist', $database));
+            }
+            $this->postgresHelper->createDatabase($database);
+        }
         $config['parameters']['database_name'] = $database;
-        $config['parameters']['database_user'] = ConfigHelper::getParameter('service.postgres.user');
-        $config['parameters']['database_password'] = ConfigHelper::getParameter('service.postgres.password');
+        $config['parameters']['database_user'] = $this->configHelper->getParameter('service.postgres.user');
+        $config['parameters']['database_password'] = $this->configHelper->getParameter('service.postgres.password');
 
 
         return $config;
@@ -129,7 +158,7 @@ EOT
     {
         $config['parameters']['mailer_transport'] = 'smtp';
         $config['parameters']['mailer_host'] = 'localhost';
-        $config['parameters']['mailer_port'] = 'localhost';
+        $config['parameters']['mailer_port'] = $this->mailcatcherDaemonChecker->getRunningPort();
         $config['parameters']['mailer_encryption'] = null;
         $config['parameters']['mailer_user'] = null;
         $config['parameters']['mailer_password'] = null;
@@ -178,13 +207,14 @@ EOT
             $config['parameters']['search_engine_name'] = 'orm';
             $config['parameters']['search_engine_host'] = 'localhost';
             $config['parameters']['search_engine_port'] = null;
-
         } else {
-            $config['parameters']['search_engine_name'] = 'elasticsearch';
+            $config['parameters']['search_engine_name'] = 'elastic_search';
             $config['parameters']['search_engine_host'] = 'localhost';
             $config['parameters']['search_engine_port'] = $this->elasticSearchDaemonChecker->getRunningPort();
-            $config['parameters']['search_engine_username'] = ConfigHelper::getParameter('service.elasticsearch.user');
-            $config['parameters']['search_engine_password'] = ConfigHelper::getParameter(
+            $config['parameters']['search_engine_username'] = $this->configHelper->getParameter(
+                'service.elasticsearch.user'
+            );
+            $config['parameters']['search_engine_password'] = $this->configHelper->getParameter(
                 'service.elasticsearch.password'
             );
         }
@@ -221,15 +251,15 @@ EOT
     private function configureRabbitMQ(array $config): array
     {
         if (!$this->isEnterprise()) {
-            $config['parameters']['message_queue_transport'] =  'dbal';
+            $config['parameters']['message_queue_transport'] = 'dbal';
             $config['parameters']['message_queue_transport_config'] = [];
         } else {
             $config['parameters']['message_queue_transport'] = 'amqp';
             $config['parameters']['message_queue_transport_config'] = [
                 'host' => 'localhost',
                 'port' => $this->rabbitMQDaemonChecker->getRunningPort(),
-                'user' => ConfigHelper::getParameter('service.rabbitmq.user'),
-                'password' => ConfigHelper::getParameter('service.rabbitmq.password'),
+                'user' => $this->configHelper->getParameter('service.rabbitmq.user'),
+                'password' => $this->configHelper->getParameter('service.rabbitmq.password'),
                 'vhost' => '/'
             ];
         }

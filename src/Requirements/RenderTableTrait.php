@@ -13,7 +13,7 @@ trait RenderTableTrait
      * @param string $header
      * @param OutputInterface $output
      */
-    protected function renderTable(array $requirements, string $header, OutputInterface $output)
+    protected function renderTable(array $requirements, string $header, OutputInterface $output): void
     {
         $rows = [];
         $verbosity = $output->getVerbosity();
@@ -26,10 +26,8 @@ trait RenderTableTrait
                 if ($verbosity >= OutputInterface::VERBOSITY_VERBOSE) {
                     $rows[] = ['WARNING', $requirement->getHelpText()];
                 }
-            } else {
-                if ($verbosity >= OutputInterface::VERBOSITY_NORMAL) {
-                    $rows[] = ['ERROR', $requirement->getHelpText()];
-                }
+            } elseif ($verbosity >= OutputInterface::VERBOSITY_NORMAL) {
+                $rows[] = ['ERROR', $requirement->getHelpText()];
             }
         }
 
