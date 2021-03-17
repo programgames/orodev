@@ -72,6 +72,8 @@ class MailcatcherDaemonChecker implements DaemonCheckerInterface, WebInterfaceIn
 
     public function getWebInterfacePort(): int
     {
+        //TODO improve to generic
+
         return 1080;
     }
 }

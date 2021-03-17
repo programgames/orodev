@@ -68,6 +68,8 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        //TODO check if services are started before checking ports
+        
         $this->info($output, 'test' . $this->elasticSearchDaemonChecker->getPid());
         $this->info($output, 'Mailcatcher Port : ' . $this->mailcatcherDaemonChecker->getRunningPort());
         $this->info($output, 'Mailcatcher interface Port : ' . $this->mailcatcherDaemonChecker->getWebInterfacePort());
