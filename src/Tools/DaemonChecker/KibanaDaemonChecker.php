@@ -2,7 +2,9 @@
 
 namespace Programgames\OroDev\Tools\DaemonChecker;
 
+use Programgames\OroDev\Exception\DaemonNotRunning;
 use Programgames\OroDev\Tools\BrewServiceParser;
+use RuntimeException;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 
@@ -34,7 +36,23 @@ class KibanaDaemonChecker implements DaemonCheckerInterface
 
     public function getPid(): int
     {
-        //TODO implement
-        return 0;
+        $process = new Process(['ps', 'aux']);
+        $process->run();
+        if (!$process->isSuccessful()) {
+            throw new RuntimeException(
+                sprintf('Failed to check "%s" PID. %s, command not found', 'kibana', $process->getErrorOutput())
+            );
+        }
+        $lsofOutput = $process->getOutput();
+        preg_match('/.*kibana.*/', $lsofOutput, $matches);
+        $kibanaProcess = preg_replace('/\s+/', ' ', reset($matches));
+
+        if (empty($kibanaProcess)) {
+            throw new DaemonNotRunning('Mailcatcher is not running');
+        }
+
+        $pieces = explode(' ', $kibanaProcess);
+
+        return $pieces[1];
     }
 }

@@ -72,8 +72,20 @@ class MailcatcherDaemonChecker implements DaemonCheckerInterface, WebInterfaceIn
 
     public function getWebInterfacePort(): int
     {
-        //TODO improve to generic
+        $pid = $this->getPid();
 
-        return 1080;
+        $process = new Process(['lsof', '-aPi', '-p', $pid]);
+        $process->run();
+        if (!$process->isSuccessful()) {
+            throw new RuntimeException(
+                sprintf('Failed to use "%s" program. %s, command not found', 'lsof -n -i', $process->getErrorOutput())
+            );
+        }
+
+        preg_match_all('/.*ruby.*/', $process->getOutput(), $matches);
+
+        $pieces = array_filter(explode(' ', reset($matches)[1]));
+
+        return (int) filter_var($pieces[20], FILTER_SANITIZE_NUMBER_INT);
     }
 }
