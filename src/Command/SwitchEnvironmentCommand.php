@@ -3,6 +3,7 @@
 namespace Programgames\OroDev\Command;
 
 use MCStreetguy\ComposerParser\ComposerJson;
+use Programgames\OroDev\Exception\NotSupportedException;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -82,7 +83,13 @@ EOT
             return self::ORO3EE;
         }
 
-        $version = $require['oro/commerce'];
+        if(array_key_exists('oro/commerce',$require)) {
+            $version = $require['oro/commerce'];
+        } elseif (array_key_exists('oro/platform',$require)) {
+            $version = $require['oro/platform'];
+        } else {
+            throw new NotSupportedException('Application not supported, please check your current directory');
+        }
 
         if (preg_match('/3./', $version)) {
             return self::ORO3CE;
