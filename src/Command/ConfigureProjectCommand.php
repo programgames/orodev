@@ -4,7 +4,7 @@ namespace Programgames\OroDev\Command;
 
 use MCStreetguy\ComposerParser\ComposerJson;
 use Programgames\OroDev\Config\ConfigHelper;
-use Programgames\OroDev\Exception\DatabaseAlreadyExist;
+use Programgames\OroDev\Exception\DatabaseNotExist;
 use Programgames\OroDev\Exception\ParameterNotFoundException;
 use Programgames\OroDev\Postgres\PostgresHelper;
 use Programgames\OroDev\Tools\DaemonChecker\ElasticSearchDaemonChecker;
@@ -12,6 +12,7 @@ use Programgames\OroDev\Tools\DaemonChecker\MailcatcherDaemonChecker;
 use Programgames\OroDev\Tools\DaemonChecker\PostgresDaemonChecker;
 use Programgames\OroDev\Tools\DaemonChecker\RabbitMqDaemonChecker;
 use RuntimeException;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -87,15 +88,32 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->info($output,'Configuring config/parameters.yml...');
+
+        $helper = $this->getHelper('question');
+        $question = new Question('Would you like to switch your dev environnment first ? Y/N ', 'y');
+        $answer = $helper->ask($input, $output, $question);
+
+        if (in_array($answer,['Yes', 'yes','y','Y'])) {
+            $command = $this->getApplication()->find('switch');
+            $command->execute(new ArrayInput([]),$output);
+
+        }
         $config = Yaml::parseFile('config/parameters.yml');
+        $this->comment($output,'Configuring database ...');
         $config = $this->configureDatabaseConfig($input, $output, $config);
+        $this->comment($output,'Configuring mailing ...');
         $config = $this->configureMailConfig($config);
+        $this->comment($output,'Configuring websocket ...');
         $config = $this->configureWebsocketConfig($config);
+        $this->comment($output,'Configuring search engine ...');
         $config = $this->configureSearchEngineConfig($config);
+        $this->comment($output,'Configuring messaging ...');
         $config = $this->configureRabbitMQ($config);
         $yaml = Yaml::dump($config);
 
         file_put_contents('config/parameters.yml', $yaml);
+        $this->info($output,'Configuration saved !');
 
         return 0;
     }
@@ -142,14 +160,23 @@ EOT
             $questionName = new Question('New database name : ');
             $database = $helper->ask($input, $output, $questionName);
             if (in_array($database, $databases, true)) {
-                throw new DatabaseAlreadyExist(sprintf('The database %s already exist', $database));
+                throw new DatabaseNotExist(sprintf('The database %s already exist', $database));
             }
             $this->postgresHelper->createDatabase($database);
+        } else {
+            if(!in_array($database, $databases, true)) {
+                $this->error($output, 'The database does not exist');
+                $questionName = new Question('New database name : ');
+                $database = $helper->ask($input, $output, $questionName);
+                if (in_array($database, $databases, true)) {
+                    throw new DatabaseNotExist(sprintf('The database %s already exist', $database));
+                }
+                $this->postgresHelper->createDatabase($database);
+            }
+            $config['parameters']['database_name'] = $database;
+            $config['parameters']['database_user'] = $this->configHelper->getParameter('service.postgres.user');
+            $config['parameters']['database_password'] = $this->configHelper->getParameter('service.postgres.password');
         }
-        $config['parameters']['database_name'] = $database;
-        $config['parameters']['database_user'] = $this->configHelper->getParameter('service.postgres.user');
-        $config['parameters']['database_password'] = $this->configHelper->getParameter('service.postgres.password');
-
 
         return $config;
     }

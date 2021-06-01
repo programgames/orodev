@@ -65,7 +65,7 @@ EOT
                     $this->error($output, $e->getMessage());
                     return -1;
                 }
-            case 'restart':
+            case 'restart' || 'reboot':
                 try {
                     return $this->restartService($output, $input->getArgument('service'));
                 } catch (ParameterNotFoundException $e) {

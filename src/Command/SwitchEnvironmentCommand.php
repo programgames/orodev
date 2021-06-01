@@ -43,6 +43,7 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->info($output, 'Switching your environment (php/elasticsearch)');
         $version = $this->getOroVersion();
 
         switch ($version) {
@@ -98,14 +99,14 @@ EOT
 
         $process = new Process(['brew', 'unlink', $phpVersion]);
         $process->run();
-        $this->info($output, sprintf('Unlinking %s',$phpVersion));
+        $this->comment($output, sprintf('Unlinking %s',$phpVersion));
         if (!$process->isSuccessful()) {
             throw new RuntimeException('An error occurred while unlinking the current php version');
         }
 
         $process = new Process(['brew', 'link', sprintf('php@%s', $version)]);
         $process->run();
-        $this->info($output, sprintf('Linking php %s',$version));
+        $this->comment($output, sprintf('Linking php %s',$version));
         if (!$process->isSuccessful()) {
             throw new RuntimeException(
                 sprintf('An error occurred while linking the php %s version with brew', $version)
@@ -139,24 +140,24 @@ EOT
     {
         $process = new Process(['brew', 'unlink', 'elasticsearch@6']);
         $process->run();
-        $this->info($output, sprintf('Unlinking elasticsearch %s',6));
+        $this->comment($output, sprintf('Unlinking elasticsearch %s',6));
         if (!$process->isSuccessful()) {
             throw new RuntimeException('An error occurred while unlinking elasticsearch 6');
         }
 
         $process = new Process(['brew', 'unlink', 'elastic/tap/elasticsearch-full']);
         $process->run();
-        $this->info($output, sprintf('Unlinking elasticsearch %s',7));
+        $this->comment($output, sprintf('Unlinking elasticsearch %s',7));
         if (!$process->isSuccessful()) {
             throw new RuntimeException('An error occurred while unlinking elasticsearch 7');
         }
 
         if ($version === self::ELASTICSEARCH7) {
             $process = new Process(['brew', 'link','elastic/tap/elasticsearch-full']);
-            $this->info($output, sprintf('Linking elasticsearch %s',7));
+            $this->comment($output, sprintf('Linking elasticsearch %s',7));
         } else {
             $process = new Process(['brew', 'link','elasticsearch@6']);
-            $this->info($output, sprintf('Linking elasticsearch %s',6));
+            $this->comment($output, sprintf('Linking elasticsearch %s',6));
         }
 
         $process->run();
